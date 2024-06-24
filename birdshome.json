@@ -1,0 +1,116 @@
+{
+  "database": {
+    "password": "",
+    "uri": "sqlite:////etc/birdshome/application/database/birdshome.db",
+    "user": ""
+  },
+  "folder_structure": {
+    "output_folder": [
+      "static"
+    ],
+    "media_folder": [
+      "media"
+    ],
+    "database_folder": [
+      "database"
+    ],
+    "replay_folder": [
+      "media",
+      "replay"
+    ],
+    "picture_folder": [
+      "media",
+      "pictures"
+    ],
+    "video_folder": [
+      "media",
+      "videos"
+    ],
+    "screenshot_folder": [
+      "media",
+      "screenshots"
+    ],
+    "vid_analyser_folder": [
+      "media",
+      "nodetct"
+    ],
+    "picture_personas": [
+      "general"
+    ],
+    "log_file_folder": [
+      "log"
+    ]
+  },
+  "general": {
+    "name": "birdshome"
+  },
+  "latest_data": {
+    "date_egg": "",
+    "date_chicken": "",
+    "date_first_visit": "",
+    "date_chick_leave": ""
+  },
+  "logging": {
+    "log_format": "%(asctime)s : %(levelname)s : %(name)s : %(message)s",
+    "log_level": "Error",
+    "log_file_name": "app.log"
+  },
+  "motion_detection": {
+    "enabled": true,
+    "sensitivity": 7000
+  },
+  "picture": {
+    "prefix": "",
+    "ending": "jpg"
+  },
+  "replay": {
+    "enabled": true,
+    "frames_per_sec": 30,
+    "interval": 10,
+    "replay_interval": 7,
+    "prefix": "",
+    "path_snapshots": "//etc/birdshome/application/static/media/screenshots/",
+    "output_path": "//etc/birdshome/application/static/media/replay/"
+  },
+  "server_upload": {
+    "enabled": false,
+    "pause_retry": 3,
+    "num_retry": 3,
+    "delete_after_upload": false,
+    "server_name": "",
+    "user": "",
+    "password": "",
+    "folder": "",
+    "ftp_enabled": false,
+    "smb_enabled": "",
+    "upload_time": "21:00"
+  },
+  "system": {
+    "application_user": "pi",
+    "application_user_group": "users",
+    "secret_key": "8EEz4lmKbvhnZF3j2M1CkxWK97IX1Hh1",
+    "debug": true,
+    "testing": false,
+    "time_format_file": "%d%m%Y%H%M%S"
+  },
+  "video": {
+    "duration": 15,
+    "video_prefix": "starbird1_",
+    "x_resolution": 1280,
+    "y_resolution": 720,
+    "frames_per_sec": 30,
+    "fourcc": "avc1",
+    "video_format": ".avi",
+    "output_video_format": [
+      "*.mp4",
+      "*.avi"
+    ],
+    "output_sound_format": ".wav",
+    "video_label_format": "%d.%m.%Y %H:%M:%S",
+    "video_rotation_enabled": true
+  },
+  "video_analyser": {
+    "enabled": false,
+    "starting_time": "02:00"
+  }
+}

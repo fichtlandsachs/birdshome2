@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="pi@kohlmeise1:22 password (3)" deleteMissingItems="true" createEmptyFolders="true" confirmBeforeUploading="false" confirmBeforeDeletion="false" showNewOnTargetInSync="false">
+    <option name="confirmBeforeDeletion" value="false" />
+    <option name="confirmBeforeUploading" value="false" />
+    <serverData>
+      <paths name="kohlmeise1">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@kohlmeise1:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@kohlmeise1:22 password (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@kohlmeise1:22 password (3)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@sparrowpi:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="pi@starbird1:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/etc/birdshome" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/application/static/media" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

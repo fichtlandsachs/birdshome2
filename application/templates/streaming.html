@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Stream{% endblock %}
+
+{% block html_head %}
+
+{% endblock %}
+
+{% block content %}
+
+    <div>
+        <img class="responsive" src="{{ url_for('video_feed') }}"
+             style="max-width:1280px;width:100%;height:100%; max-height:720px">
+    </div>
+    <script>
+        function takePicture() {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var response = xmlhttp.responseText; //if you need to do something with the returned value
+                }
+            }
+
+            xmlhttp.open("GET", "http://127.0.0.1/cam", true);
+            xmlhttp.send();
+        }
+
+    </script>
+{% endblock %}
