@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    {% block html_head %}{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="localization" hreflang="de" href="lang/de.json" type="application/vnd.oftn.l10n+json"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
+</head>
+<body>
+<div class="topnav" id="birdNav">
+
+    <a href="personas" id="we_live_here">Hier wohnen wir</a>
+
+    <a href="stream" id="stream">Live Stream</a></li>
+    <a href="cam" id="cam">Foto aufnehmen</a></li>
+    <a href="capture" id="record">Film aufnehmen</a></li>
+    <div class="dropdown">
+        <button class="dropbtn">Media</button>
+        <div class="dropdown-content" id="media">
+            <a href="slideshow">Bilder</a>
+            <a href="videoList">Video</a>
+            <a href="replayList">Zeitraffer</a>
+            <a href="videoList_10001">Video h/d hoch</a>
+            <a href="videoList_5001">Video h/d mittel</a>
+            <a href="videoList_5000">Video h/d niedrig</a>
+            <a href="videoList_noDetect">Videos aussortiert</a>
+        </div>
+    </div>
+    <a href="admin" id="admin">Admin</a></li>
+    <a href="javascript:void(0);" class="icon" onclick="navFunction()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+<div id="content">
+    {% block content %}{% endblock %}
+</div>
+
+<div id="footer">
+    {% block footer %}
+        &copy; Copyright 2021 by fichtlandsachs</a>.
+    {% endblock %}
+</div>
+<script>
+    function navFunction() {
+        var x = document.getElementById("birdNav");
+        if (x.className === "topnav") {
+            x.className += " responsive";
+        } else {
+            x.className = "navbar";
+        }
+    }
+
+    {% block script %}{% endblock %}
+</script>
+</body>

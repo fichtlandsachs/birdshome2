@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div class="form-wrapper">
+        <h2 class="title">Einstellungen</h2>
+
+        <form method="POST" action="{{ url_for('admin') }}">
+
+            <fieldset class="form-field">
+                <legend>Allgemeine Einstellungen</legend>
+                <p>
+                    {{ form.motion_handling_enabled.label }}
+                    {{ form.motion_handling_enabled(onChange="updateFieldDuration(this.value)") }}
+                    {% if form.motion_handling_enabled.errors %}
+                        <ul class="errors">
+                            {% for error in form.motion_handling_enabled.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {{ form.duration_vidVal }}
+                </p>
+                <p>
+                    {{ form.duration_vid.label }}
+                    {{ form.duration_vid(min=1, max=45,onChange="updateFieldDuration(this.value)") }}
+                    {% if form.duration_vid.errors %}
+                        <ul class="errors">
+                            {% for error in form.duration_vid.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {{ form.duration_vidVal }}
+                </p><p>
+                {{ form.vid_res_x.label }}
+                {{ form.vid_res_x }}
+                {% if form.vid_res_x.errors %}
+                    <ul class="errors">
+                        {% for error in form.vid_res_x.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {{ form.vid_res_y.label }}
+                {{ form.vid_res_y }}
+                {% if form.vid_res_y.errors %}
+                    <ul class="errors">
+                        {% for error in form.vid_res_y.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.sensitivity.label }}
+                {{ form.sensitivity(min=1, max=10000,onChange="updateFieldSensitivity(this.value)") }}
+                {% if form.sensitivity.errors %}
+                    <ul class="errors">
+                        {% for error in form.sensitivity.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {{ form.sensitivityVal }}
+                </p><p>
+                {{ form.prefix_vid.label }}
+                {{ form.prefix_vid }}
+                {% if form.prefix_vid.errors %}
+                    <ul class="errors">
+                        {% for error in form.prefix_vid.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+            </p>
+                <p>
+                    {{ form.prefix_pic.label }}
+                    {{ form.prefix_pic }}
+                    {% if form.prefix_pic.errors %}
+                        <ul class="errors">
+                            {% for error in form.prefix_pic.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {{ form.pic_ending.label }}
+                {{ form.pic_ending }}
+                {% if form.pic_ending.errors %}
+                    <ul class="errors">
+                        {% for error in form.pic_ending.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.vid_drehen_enabled.label }}
+                {{ form.vid_drehen_enabled }}
+                {% if form.vid_drehen_enabled.errors %}
+                    <ul class="errors">
+                        {% for error in form.vid_drehen_enabled.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p>
+            </fieldset>
+            </p>
+            <fieldset class="form-field">
+                <legend>Zeitraffer</legend>
+                <p>
+
+                    {{ form.replay_enabled }}
+                    {{ form.replay_enabled.label }}
+                    {% if form.replay_enabled.errors %}
+                        <ul class="errors">
+                            {% for error in form.replay_enabled.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p><p>
+                {{ form.replay_interval.label }}
+                {{ form.replay_interval }}
+                {% if form.replay_interval.errors %}
+                    <ul class="errors">
+                        {% for error in form.replay_interval.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <p>
+                    {{ form.replay_days.label }}
+                    {{ form.replay_days }}
+                    {% if form.replay_days.errors %}
+                        <ul class="errors">
+                            {% for error in form.replay_days.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p><p>
+
+                {{ form.frames_per_sec_replay.label }}
+                {{ form.frames_per_sec_replay }}
+                {% if form.frames_per_sec_replay.errors %}
+                    <ul class="errors">
+                        {% for error in form.frames_per_sec_replay.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p>
+            </fieldset>
+            <fieldset class="form-field">
+                <legend>Serverupload</legend>
+                <p>
+
+                    {{ form.upload_enabled }}
+                    {{ form.upload_enabled.label}}
+                    {% if form.upload_enabled.errors %}
+                        <ul class="errors">
+                            {% for error in form.upload_enabled.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p>
+                <p>
+                    {{ form.radio_ftp }}
+                    {{ form.radio_ftp.label }}
+                    {% if form.radio_ftp.errors %}
+                        <ul class="errors">
+                            {% for error in form.radio_ftp.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p>                <p>
+
+                    {{ form.delete_enabled }}
+                    {{ form.delete_enabled.label }}
+                    {% if form.delete_enabled.errors %}
+                        <ul class="errors">
+                            {% for error in form.delete_enabled.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p>
+                            <p>
+                    {{ form.user_upload.label}}{{ form.user_upload }}
+                    {% if form.user_upload.errors %}
+                        <ul class="errors">
+                            {% for error in form.user_upload.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {{ form.password_upload.label }}
+                    {{ form.password_upload }}
+                    {% if form.password_upload.errors %}
+                        <ul class="errors">
+                            {% for error in form.password_upload.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </p>
+                <p>
+                {{ form.num_retry_upload.label }}
+                {{ form.num_retry_upload }}
+                {% if form.num_retry_upload.errors %}
+                    <ul class="errors">
+                        {% for error in form.num_retry_upload.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.pause_retry_upload.label }}
+                {{ form.pause_retry_upload }}
+                {% if form.pause_retry_upload.errors %}
+                    <ul class="errors">
+                        {% for error in form.pause_retry_upload.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.server_upload.label }}
+                {{ form.server_upload }}
+                {% if form.server_upload.errors %}
+                    <ul class="errors">
+                        {% for error in form.server_upload.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.folder_upload.label }}
+                {{ form.folder_upload }}
+                {% if form.folder_upload.errors %}
+                    <ul class="errors">
+                        {% for error in form.folder_upload.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p><p>
+                {{ form.time_upload.label }}
+                {{ form.time_upload }}
+                {% if form.time_upload.errors %}
+                    <ul class="errors">
+                        {% for error in form.time_upload.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p>
+            </fieldset>
+            <fieldset class="form-field">
+                <legend>Videoanalyse</legend>
+                <p>
+                {{ form.vid_sorter_enabled }}
+                {{ form.vid_sorter_enabled.label }}
+                {% if form.vid_sorter_enabled.errors %}
+                    <ul class="errors">
+                        {% for error in form.time_vid_sorter.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p>
+                <p>
+                {{ form.time_vid_sorter.label }}
+                {{ form.time_vid_sorter }}
+                {% if form.time_vid_sorter.errors %}
+                    <ul class="errors">
+                        {% for error in form.time_vid_sorter.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                </p>
+            </fieldset>
+            </p>
+
+
+            {{ form.submit }}
+
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+    function updateFieldSensitivity(val) {
+    document.getElementById('sensitivityVal').value=parseInt(val);
+    }
+    function updateFieldDuration(val) {
+    document.getElementById('duration_vidVal').value=parseInt(val);
+    }
+{% endblock %}
