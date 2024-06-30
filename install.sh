@@ -59,9 +59,7 @@ if [ ! -d "/etc/birdshome" ]; then
   echo "Folder $FLD_BIRDSHOME_ROOT created!"
 fi
 
-if [ -d "/etc/systemd/system/birdshome.service" ]; then
-  sudo rm /etc/systemd/system/birdshome.service
-fi
+sudo rm /etc/systemd/system/birdshome.service
 sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/
 
 sleep 2s
