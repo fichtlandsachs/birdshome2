@@ -24,58 +24,65 @@ stty -echo
 read password_app;
 stty echo
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
+echo $password_inst | su -l "$INSTALL_USER"
+
+sudo apt update && sudo apt -y upgrade
 # Install all required packages
-echo $password_inst | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev software-properties-common ufw git"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy"
+sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
+ gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev libopenexr-dev libopencv-dev \
+ libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev software-properties-common ufw git
+sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy
 #create the user for teh application
 if id -u $APP_USER >/dev/null 2>&1; then
   echo "user $APP_USER exists"
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo useradd -g users -G pi -m $APP_USER"
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo passwd $APP_USER"
+  sudo useradd -g users -G pi -m $APP_USER
+  sudo passwd $APP_USER
   echo "user $APP_USER created"
 fi
 
 if getent group "$APP_USER" >/dev/null; then
     echo "Group $APP_USER exists"
 else
-    echo $password_inst | su - "$INSTALL_USER" -c "sudo groupadd §APP_USER"
+    sudo groupadd $APP_USER
     echo "Group $APP_USER created"
 fi
 
-# switch to user context and create the virtual environment
-echo $password_app | su - "$APP_USER" -c "cd ~ &"
-echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
-sleep 5s
-echo $password_app | su - "$APP_USER" -c "source /home/$APP_USER/birdshome/bin/activate &"
-echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
 if [ ! -d "/etc/birdshome" ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
-  echo "Folder $FLD_BIRDSHOME_ROOT created! \n"
+  sudo mkdir $FLD_BIRDSHOME_ROOT
+  echo "Folder $FLD_BIRDSHOME_ROOT created!"
 fi
-echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
+exit
+git clone https://github.com/fichtlandsachs/birdshome2.git &
+sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/ &
 sleep 2s
-# install required packages
-#pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
-echo $password_app | su - "$APP_USER" -c "pip3 uninstall -y numpy &"
-folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
-echo $password_app | su - "$APP_USER" -c "pip3 install -r $folder &"
-sleep 10s
-
 # create samba user
 if id -u $SMB_USER >/dev/null 2>&1; then
   echo "user $SMB_USER exists"
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo useradd -s /bin/false $SMB_USER"
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo smbpasswd -a $SMB_USER"
+  sudo useradd -s /bin/false $SMB_USER
+  sudo smbpasswd -a $SMB_USER
   echo "user $SMB_USER created"
 fi
+sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
 
+echo "Change User context to $APP_USER"
+echo $password_app | su -l "$APP_USER"
+# switch to user context and create the virtual environment
+cd ~ &
+virtualenv birdshome &
+sleep 5s
+source /home/$APP_USER/birdshome/bin/activate &
+# install required packages
+#pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
+pip3 uninstall -y numpy &
+folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
+pip3 install -r $folder &
+sleep 10s
+echo "Leaving App User Context"
+exit
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
-
-
+echo $password_inst | su -l "$INSTALL_USER"
 # Überprüfen, ob die Datei existiert
 if [ ! -f $SMB_CONF ]; then
     echo "Konfigurationsdatei $SMB_CONF nicht gefunden!"
@@ -83,81 +90,79 @@ if [ ! -f $SMB_CONF ]; then
 fi
 
 echo 'start to configure samba share'
-echo $password_inst | su - "$INSTALL_USER" -c "sudo cp $SMB_CONF $SMB_CONF.original"
+sudo cp $SMB_CONF $SMB_CONF.original
 echo 'samba.conf saved to smd.conf.original'
-echo $password_inst | su - "$INSTALL_USER" -c "sudo cp $SMB_CONF $SMB_CONF_TMP"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i 's/workgroup = .*$/workgroup = smb/' $SMB_CONF_TMP"
+sudo cp $SMB_CONF $SMB_CONF_TMP
+sudo sed -i 's/workgroup = .*$/workgroup = smb/' $SMB_CONF_TMP
 echo 'changed workgroup to smb'
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i 's/security = .*$/security = user/' $SMB_CONF_TMP"
+sudo sed -i 's/security = .*$/security = user/' $SMB_CONF_TMP
 echo 'changed security to user'
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP"
+sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP
 echo 'changed map to guest to never'
 
 if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[bird_media]' $SMB_CONF_TMP"
+  sudo sed -i -e '$a\' -e '[bird_media]' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s path= .*$/path ='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s path= .*$/path ='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"public"'/' | grep -q "public"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a public = yes' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a public = yes' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s public = .*$/public = yes' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s public = .*$/public = yes' $SMB_CONF_TMP
 fi
 
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"writable"'/' | grep -q "writable"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a writable = yes' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a writable = yes' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s writable = .*$/writable = yes' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s writable = .*$/writable = yes' $SMB_CONF_TMP
 fi
 
-if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"comment"'/' | grep -q "comment"; then
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a comment = video share' $SMB_CONF_TMP"
+if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP | awk '/^\[/{exit} /'"comment"'/' | grep -q "comment"; then
+  sudo sed -i '/^\[bird_media\]/a comment = video share' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s comment = .*$/comment = video share' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s comment = .*$/comment = video share' $SMB_CONF_TMP
 fi
 
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"printable"'/' | grep -q "printable"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a printable = no' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a printable = no' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s printable = .*$/printable = no' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s printable = .*$/printable = no' $SMB_CONF_TMP
 fi
 
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"guest ok"'/' | grep -q "guest ok"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a guest ok = no' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a guest ok = no' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s guest ok = .*$/guest ok = no' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s guest ok = .*$/guest ok = no' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"valid users"'/' | grep -q "valid users"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a valid users = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a valid users = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s valid users = .*$/valid users = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s valid users = .*$/valid users = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"write list"'/' | grep -q "write list"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a write list = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a write list = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s write list = .*$/write list = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s write list = .*$/write list = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"create mask"'/' | grep -q "create mask"; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a create mask = 0600' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a create mask = 0600' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s create mask = .*$/create mask = 0600' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s create mask = .*$/create mask = 0600' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"directory mask "'/' | grep -q "directory mask "; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a directory mask = 0700' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/a directory mask = 0700' $SMB_CONF_TMP
 else
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s directory mask = .*$/directory mask  = 0700' $SMB_CONF_TMP"
+  sudo sed -i '/^\[bird_media\]/s directory mask = .*$/directory mask  = 0700' $SMB_CONF_TMP
 fi
 
-
-
-echo $password_inst | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
+sudo mv $SMB_CONF_TMP $SMB_CONF
 echo "configuration $SMB_CONF updated"
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo rm $SMB_CONF_TMP"
+sudo rm $SMB_CONF_TMP
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
+sudo touch  $FLD_BIRDSHOME_SERV
 PID=$!
 wait $PID
 if [ $? -eq 0 ]; then
@@ -167,7 +172,7 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
     echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
 fi
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << END
+sudo tee -a $FLD_BIRDSHOME_SERV << EOF
 [Unit]
 Description=birdhome Service
 After=network.target'
@@ -181,12 +186,12 @@ ExecStart=sh $FLD_BIRDSHOME_ROOT/birds_dev.sh
 
 [Install]
 WantedBy=multi-user.target
-"
+EOF
 
 echo 'service birdshome created'
-echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+sudo systemctl daemon-reload
+sudo systemctl start birdshome.service
+sudo systemctl enable birdshome.service
 
 if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
     echo "Konfigurationsdatei /etc/nginx/sites-enabled/default gefunden!"
@@ -194,8 +199,8 @@ else
   unlink /etc/nginx/sites-enabled/default
 fi
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo touch /etc/nginx/sites-available/reverse-proxy.conf"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
+sudo touch /etc/nginx/sites-available/reverse-proxy.conf
+sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
 server {
         listen 80;
         listen [::]:80;
@@ -206,14 +211,14 @@ server {
         location / {
                     proxy_pass http://127.0.0.1:5000;
   }
-"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo nginx -s reload"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 80"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw limit https"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw reload"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw enable"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
+EOF
+sudo nginx -s reload
+sudo ufw allow 22/tcp
+sudo ufw allow 80
+sudo ufw allow 443/tcp
+sudo ufw allow 8443/tcp
+sudo ufw limit https
+sudo ufw reload
+sudo ufw enable
+sudo systemctl restart smbd.service
+sudo systemctl start birdshome
