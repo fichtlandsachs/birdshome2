@@ -224,7 +224,7 @@ sudo ufw allow 443/tcp
 sudo ufw allow 8443/tcp
 sudo ufw limit https
 sudo ufw reload
-sudo ufw enable
+sudo ufw --force enable
 sudo systemctl restart smbd.service
 sudo systemctl start birdshome
 rm -R -f /home/$INSTALL_USER/birdshome2
