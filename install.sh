@@ -25,6 +25,8 @@ fi
 su - "$APP_USER" -c "cd ~ &"
 su - "$APP_USER" -c "virtualenv birdshome &"
 su - "$APP_USER" -c "source birdshome/bin/activate &"
+su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git"
+su - "$INSTALL_USER" -c "cp /home/$APP_USER/birdshome2 /etc/birdshome"
 
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
