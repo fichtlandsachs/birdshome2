@@ -72,14 +72,14 @@ echo "Change User context to $APP_USER"
 echo $password_app | su -l "$APP_USER"
 # switch to user context and create the virtual environment
 cd ~ &
-virtualenv birdshome &
+virtualenv /home/$APP_USER/birdshome
 sleep 5s
-source /home/$APP_USER/birdshome/bin/activate &
+source /home/$APP_USER/birdshome/bin/activate
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
-pip3 uninstall -y numpy &
+pip3 uninstall -y numpy
 folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
-pip3 install -r $folder &
+pip3 install -r $folder
 sleep 10s
 echo "Leaving App User Context"
 
@@ -224,3 +224,4 @@ sudo ufw reload
 sudo ufw enable
 sudo systemctl restart smbd.service
 sudo systemctl start birdshome
+rm -R birdshome2
