@@ -169,15 +169,15 @@ fi
 
 echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << END
 [UNIT]
-Description=birdhome Service'
+Description=birdhome Service
 After=network.target'
 
 [Service]
-Type=simple'
-User='$APP_USER
-WorkingDirectory='$FLD_BIRDSHOME
-Restart=always'
-ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh'
+Type=simple
+User=$APP_USER
+WorkingDirectory=$FLD_BIRDSHOME
+Restart=always
+ExecStart=sh $FLD_BIRDSHOME/birds_dev.sh
 
 [Install]
 WantedBy=multi-user.target
