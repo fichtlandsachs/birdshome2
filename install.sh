@@ -50,6 +50,8 @@ else
     echo "Group $APP_USER created"
 fi
 
+sudo adduser $APP_USER dialout
+
 if [ ! -d "/etc/birdshome" ]; then
   sudo mkdir $FLD_BIRDSHOME_ROOT
   echo "Folder $FLD_BIRDSHOME_ROOT created!"
@@ -70,7 +72,7 @@ else
   echo "user $SMB_USER created"
 fi
 sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
-
+stty -echo
 echo "Change User context to $APP_USER"
 echo $password_app | su - "$APP_USER"
 # switch to user context and create the virtual environment
@@ -93,7 +95,7 @@ if [ ! -f $SMB_CONF ]; then
     echo "Konfigurationsdatei $SMB_CONF nicht gefunden!"
     exit 1
 fi
-
+stty echo
 echo 'start to configure samba share'
 sudo cp $SMB_CONF $SMB_CONF.original
 echo 'samba.conf saved to smd.conf.original'
