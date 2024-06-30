@@ -180,8 +180,7 @@ Restart=always' $FLD_BIRDSHOME_SERV
 ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV
 
 [Install]
-WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV
-END &"
+WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV &"
@@ -205,17 +204,18 @@ else
   unlink /etc/nginx/sites-enabled/default
 fi
 
-touch /etc/nginx/sites-available/reverse-proxy.conf
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e 'server { \
-        listen 80; \
-        listen [::]:80; \
-\
-        access_log /var/log/nginx/reverse-access.log; \
-        error_log /var/log/nginx/reverse-error.log; \
-\
-        location / {\
-                    proxy_pass http://127.0.0.1:5000; \
-  }' /etc/nginx/sites-available/reverse-proxy.conf"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo touch /etc/nginx/sites-available/reverse-proxy.conf"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
+server {
+        listen 80;
+        listen [::]:80;
+
+        access_log /var/log/nginx/reverse-access.log;
+        error_log /var/log/nginx/reverse-error.log;
+
+        location / {
+                    proxy_pass http://127.0.0.1:5000;
+  }"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo nginx -s reload"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 80"
