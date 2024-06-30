@@ -167,7 +167,7 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
     echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
 fi
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a /etc/systemd/system/birdshome.service << END
+echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << END
 [UNIT]
 Description=birdhome Service'
 After=network.target'
@@ -180,7 +180,8 @@ Restart=always'
 ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh'
 
 [Install]
-WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
+WantedBy=multi-user.target
+EOF"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV &"
