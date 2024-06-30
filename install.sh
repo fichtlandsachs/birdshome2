@@ -52,7 +52,7 @@ if [ ! -d "/etc/birdshome" ]; then
   sudo mkdir $FLD_BIRDSHOME_ROOT
   echo "Folder $FLD_BIRDSHOME_ROOT created!"
 fi
-exit
+
 git clone https://github.com/fichtlandsachs/birdshome2.git &
 sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/ &
 sleep 2s
@@ -80,7 +80,7 @@ folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
 pip3 install -r $folder &
 sleep 10s
 echo "Leaving App User Context"
-exit
+
 
 echo $password_inst | su -l "$INSTALL_USER"
 # Überprüfen, ob die Datei existiert
