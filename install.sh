@@ -181,7 +181,7 @@ ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh'
 
 [Install]
 WantedBy=multi-user.target
-EOF"
+"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV &"
 #echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV &"
