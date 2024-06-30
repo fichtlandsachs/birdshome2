@@ -74,7 +74,7 @@ sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
 echo "Change User context to $APP_USER"
 echo $password_app | su -l "$APP_USER"
 # switch to user context and create the virtual environment
-cd ~
+cd ~/
 virtualenv /home/$APP_USER/birdshome
 sleep 5s
 source /home/$APP_USER/birdshome/bin/activate
