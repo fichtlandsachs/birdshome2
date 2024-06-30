@@ -55,7 +55,7 @@ if [ ! -d "/etc/birdshome" ]; then
   echo "Folder $FLD_BIRDSHOME_ROOT created!"
 fi
 
-sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/ &
+sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/
 
 sleep 2s
 # create samba user
@@ -71,7 +71,7 @@ sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
 echo "Change User context to $APP_USER"
 echo $password_app | su -l "$APP_USER"
 # switch to user context and create the virtual environment
-cd ~ &
+cd ~
 virtualenv /home/$APP_USER/birdshome
 sleep 5s
 source /home/$APP_USER/birdshome/bin/activate
