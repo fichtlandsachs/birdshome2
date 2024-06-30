@@ -42,6 +42,9 @@ echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
 sleep 5s
 echo $password_app | su - "$APP_USER" -c "source /home/$APP_USER/birdshome/bin/activate &"
 echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
+if [ ! -d "/etc/birdshome" ]; then
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir /etc/birdshome"
+fi
 echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
 sleep 2s
 # install required packages
@@ -60,9 +63,7 @@ else
   echo "user $SMB_USER created"
 fi
 
-if [ ! -d "/etc/birdshome" ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir /etc/birdshome"
-fi
+
 echo $password_inst | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
 
 
