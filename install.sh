@@ -175,24 +175,13 @@ After=network.target'
 [Service]
 Type=simple
 User=$APP_USER
-WorkingDirectory=$FLD_BIRDSHOME
+WorkingDirectory=$FLD_BIRDSHOME_ROOT
 Restart=always
-ExecStart=sh $FLD_BIRDSHOME/birds_dev.sh
+ExecStart=sh $FLD_BIRDSHOME_ROOT/birds_dev.sh
 
 [Install]
 WantedBy=multi-user.target
 "
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV &"
-
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV &"
-#echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV &"
 
 echo 'service birdshome created'
 echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
@@ -216,7 +205,8 @@ server {
 
         location / {
                     proxy_pass http://127.0.0.1:5000;
-  }"
+  }
+"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo nginx -s reload"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 80"
