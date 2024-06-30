@@ -168,17 +168,17 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
 fi
 
 echo $password_inst | su - "$INSTALL_USER" -c "sudo echo [UNIT] >> /etc/systemd/system/birdshome.service &"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV &"
 
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV &"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV &"
 
 echo 'service birdshome created'
 echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
