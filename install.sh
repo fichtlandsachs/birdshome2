@@ -39,7 +39,7 @@ if id -u $APP_USER >/dev/null 2>&1; then
   echo "user $APP_USER exists"
 else
   sudo useradd -g users -G pi -m $APP_USER
-  sudo passwd $APP_USER
+  echo $password_app |   sudo passwd $APP_USER
   echo "user $APP_USER created"
 fi
 
