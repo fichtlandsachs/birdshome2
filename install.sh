@@ -227,4 +227,4 @@ sudo ufw reload
 sudo ufw enable
 sudo systemctl restart smbd.service
 sudo systemctl start birdshome
-rm -R /home/$INSTALL_USER/birdshome2
+rm -R -f /home/$INSTALL_USER/birdshome2
