@@ -9,10 +9,15 @@ FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
 SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 
+echo "Installation User ID:"
+read INSTALL_USER
 echo "Please enter the password for the installation user";
 stty -echo
 read password_inst;
 stty echo
+
+echo "Application User ID:"
+read APP_USER
 
 echo "Please enter the password for the application user";
 stty -echo
@@ -36,7 +41,7 @@ echo $password_app | su - "$APP_USER" -c "cd ~ &"
 echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
 echo $password_app | su - "$APP_USER" -c "source birdshome/bin/activate &"
 echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
-echo $password_inst | su - "$INSTALL_USER" -c "cp  /etc/birdshome /home/$APP_USER/birdshome2&"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
 
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
