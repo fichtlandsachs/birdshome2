@@ -144,9 +144,9 @@ fi
 
 
 
-mv $SMB_CONF_TMP $SMB_CONF
+echo $password_inst | su - "$INSTALL_USER" -c "mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
-rm $SMB_CONF_TMP
+  echo $password_inst | su - "$INSTALL_USER" -c "rm $SMB_CONF_TMP"
 
 echo $password_inst | su - "$INSTALL_USER" -c "touch  $FLD_BIRDSHOME_SERV"
 PID=$!
@@ -159,22 +159,22 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
 fi
 
 echo $password_inst | su - "$INSTALL_USER" -c "echo [UNIT] >> /etc/systemd/system/birdshome.service &"
-sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV
-sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV
-sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV
-sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV
-sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV
-sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV
-sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV
-sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV"
 
-sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV
-sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
 
 echo 'service birdshome created'
-systemctl daemon-reload
-systemctl start birdshome.service
-systemctl enable birdshome.service
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
 
 if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
     echo "Konfigurationsdatei /etc/nginx/sites-enabled/default gefunden!"
