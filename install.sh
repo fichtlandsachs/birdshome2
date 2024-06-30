@@ -63,24 +63,6 @@ if [ ! -d "/etc/birdshome" ]; then
 fi
 echo $password_inst | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
 
-if [ ! -d $FLD_BIRDSHOME ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME"
-fi
-if [ ! -d $FLD_BIRDSHOME'/static' ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME'/static'"
-fi
-if [ ! -d $FLD_BIRDSHOME'/static/media' ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME'/static/media'"
-fi
-if [ ! -d $FLD_BIRDSHOME'/static/media/photos' ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME'/static/media/photos'"
-fi
-if [ ! -d $FLD_BIRDSHOME'/static/media/videos' ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME'/static/media/videos'"
-fi
-if [ ! -d $FLD_BIRDSHOME'/static/media/charts' ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo  mkdir $FLD_BIRDSHOME'/static/media/charts'"
-fi
 
 # Überprüfen, ob die Datei existiert
 if [ ! -f $SMB_CONF ]; then
