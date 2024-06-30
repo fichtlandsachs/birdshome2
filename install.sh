@@ -170,14 +170,14 @@ fi
 echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a /etc/systemd/system/birdshome.service << END
 [UNIT]
 Description=birdhome Service'
-After=network.target' $FLD_BIRDSHOME_SERV
+After=network.target'
 
 [Service]
-Type=simple' $FLD_BIRDSHOME_SERV
-User='$APP_USER $FLD_BIRDSHOME_SERV
-WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV
-Restart=always' $FLD_BIRDSHOME_SERV
-ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV
+Type=simple'
+User='$APP_USER
+WorkingDirectory='$FLD_BIRDSHOME
+Restart=always'
+ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh'
 
 [Install]
 WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
