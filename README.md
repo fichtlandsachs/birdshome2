@@ -1,5 +1,4 @@
 # Birdshome
-
 watch birds nest
 
 The project is based on a raspberry pi 4 with 4GB RAM
@@ -13,3 +12,4 @@ sudo apt-get install git
 git clone https://github.com/fichtlandsachs/birdshome2.git
 cd birdshome2
 sh install.sh
+
