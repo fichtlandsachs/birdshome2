@@ -120,7 +120,7 @@ else
   sudo sed -i '/^\[bird_media\]/s writable = .*$/writable = yes' $SMB_CONF_TMP
 fi
 
-if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP | awk '/^\[/{exit} /'"comment"'/' | grep -q "comment"; then
+if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"comment"'/' | grep -q "comment"; then
   sudo sed -i '/^\[bird_media\]/a comment = video share' $SMB_CONF_TMP
 else
   sudo sed -i '/^\[bird_media\]/s comment = .*$/comment = video share' $SMB_CONF_TMP
