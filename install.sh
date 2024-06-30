@@ -74,15 +74,15 @@ sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
 echo "Change User context to $APP_USER"
 echo $password_app | su - "$APP_USER"
 # switch to user context and create the virtual environment
-cd ~/
-virtualenv ~/birdshome
+echo $password_app | su - "$APP_USER" -c "cd ~/"
+echo $password_app | su - "$APP_USER" -c "virtualenv ~/birdshome"
 sleep 5s
-source ~/birdshome/bin/activate
+echo $password_app | su - "$APP_USER" -c "source ~/birdshome/bin/activate"
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
-pip3 uninstall -y numpy
+echo $password_app | su - "$APP_USER" -c "pip3 uninstall -y numpy"
 folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
-pip3 install -r $folder
+echo $password_app | su - "$APP_USER" -c "pip3 install -r $folder"
 sleep 10s
 echo "Leaving App User Context"
 
