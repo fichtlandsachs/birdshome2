@@ -1,8 +1,4 @@
 Flask
-numpy
-matplotlib
-pathlib
-pandas
 uWSGI
 uwsgidecorators
 requests
