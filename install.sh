@@ -75,7 +75,7 @@ echo "Change User context to $APP_USER"
 echo $password_app | su -l "$APP_USER"
 # switch to user context and create the virtual environment
 cd ~/
-virtualenv /home/$APP_USER/birdshome
+virtualenv ~/birdshome
 sleep 5s
 source /home/$APP_USER/birdshome/bin/activate
 # install required packages
