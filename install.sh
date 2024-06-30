@@ -36,6 +36,14 @@ else
   echo $password_inst | su - "$INSTALL_USER" -c "sudo passwd $APP_USER"
   echo "user $APP_USER created"
 fi
+
+if getent group "$APP_USER" >/dev/null; then
+    echo "Group $APP_USER exists"
+else
+    echo $password_inst | su - "$INSTALL_USER" -c "sudo groupadd §APP_USER"
+    echo "Group $APP_USER created"
+fi
+
 # switch to user context and create the virtual environment
 echo $password_app | su - "$APP_USER" -c "cd ~ &"
 echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
@@ -43,7 +51,8 @@ sleep 5s
 echo $password_app | su - "$APP_USER" -c "source /home/$APP_USER/birdshome/bin/activate &"
 echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
 if [ ! -d "/etc/birdshome" ]; then
-  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir /etc/birdshome"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
+  echo "Folder $FLD_BIRDSHOME_ROOT created! \n"
 fi
 echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
 sleep 2s
@@ -144,11 +153,11 @@ fi
 
 
 
-echo $password_inst | su - "$INSTALL_USER" -c "mv $SMB_CONF_TMP $SMB_CONF"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
-  echo $password_inst | su - "$INSTALL_USER" -c "rm $SMB_CONF_TMP"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo rm $SMB_CONF_TMP"
 
-echo $password_inst | su - "$INSTALL_USER" -c "touch  $FLD_BIRDSHOME_SERV"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
 PID=$!
 wait $PID
 if [ $? -eq 0 ]; then
