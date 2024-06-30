@@ -32,8 +32,10 @@ sudo apt update && sudo apt -y upgrade
 # Install all required packages
 sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
  gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev libopenexr-dev libopencv-dev \
- libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev software-properties-common ufw git
-sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy
+ libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev software-properties-common ufw \
+ libopenblas-dev
+sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy \
+  python3-opencv
 #create the user for teh application
 if id -u $APP_USER >/dev/null 2>&1; then
   echo "user $APP_USER exists"
