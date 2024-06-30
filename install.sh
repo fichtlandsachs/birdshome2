@@ -25,6 +25,8 @@ read password_app;
 stty echo
 
 echo $password_inst | su -l "$INSTALL_USER"
+cd ~
+
 
 sudo apt update && sudo apt -y upgrade
 # Install all required packages
@@ -55,6 +57,7 @@ fi
 
 git clone https://github.com/fichtlandsachs/birdshome2.git &
 sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/ &
+
 sleep 2s
 # create samba user
 if id -u $SMB_USER >/dev/null 2>&1; then
