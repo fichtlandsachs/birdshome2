@@ -72,7 +72,7 @@ fi
 sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
 
 echo "Change User context to $APP_USER"
-echo $password_app | su -l "$APP_USER"
+echo $password_app | su - "$APP_USER"
 # switch to user context and create the virtual environment
 cd ~/
 virtualenv ~/birdshome
@@ -87,7 +87,7 @@ sleep 10s
 echo "Leaving App User Context"
 
 
-echo $password_inst | su -l "$INSTALL_USER"
+echo $password_inst | su - "$INSTALL_USER"
 # Überprüfen, ob die Datei existiert
 if [ ! -f $SMB_CONF ]; then
     echo "Konfigurationsdatei $SMB_CONF nicht gefunden!"
