@@ -39,22 +39,17 @@ fi
 # switch to user context and create the virtual environment
 echo $password_app | su - "$APP_USER" -c "cd ~ &"
 echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
-PID=$!
-wait $PID
+sleep 5s
 echo $password_app | su - "$APP_USER" -c "source birdshome/bin/activate &"
 echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
-
+sleep 2s
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
 echo $password_app | su - "$APP_USER" -c "pip3 uninstall -y numpy &"
 folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
 echo $password_app | su - "$APP_USER" -c "pip3 install -r $folder &"
-PID=$!
-wait $PID
-if [ $? -eq 0 ]; then
-    echo "Python packages successfully installed"
-fi
+sleep 10s
 
 # create samba user
 if id -u $SMB_USER >/dev/null 2>&1; then
