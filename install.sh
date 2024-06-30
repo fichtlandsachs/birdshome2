@@ -168,7 +168,7 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
 fi
 
 echo $password_inst | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << END
-[UNIT]
+[Unit]
 Description=birdhome Service
 After=network.target'
 
