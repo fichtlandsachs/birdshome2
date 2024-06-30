@@ -39,6 +39,8 @@ fi
 # switch to user context and create the virtual environment
 echo $password_app | su - "$APP_USER" -c "cd ~ &"
 echo $password_app | su - "$APP_USER" -c "virtualenv birdshome &"
+PID=$!
+wait $PID
 echo $password_app | su - "$APP_USER" -c "source birdshome/bin/activate &"
 echo $password_app | su - "$APP_USER" -c "git clone https://github.com/fichtlandsachs/birdshome2.git &"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo mv /home/birdie/birdshome2/* /etc/birdshome/ &"
