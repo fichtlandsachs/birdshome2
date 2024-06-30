@@ -77,7 +77,7 @@ echo $password_app | su -l "$APP_USER"
 cd ~/
 virtualenv ~/birdshome
 sleep 5s
-source /home/$APP_USER/birdshome/bin/activate
+source ~/birdshome/bin/activate
 # install required packages
 #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
 pip3 uninstall -y numpy
