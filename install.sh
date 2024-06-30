@@ -168,17 +168,17 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
 fi
 
 echo $password_inst | su - "$INSTALL_USER" -c "echo [UNIT] >> /etc/systemd/system/birdshome.service &"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Type=simple' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a User='$APP_USER $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a WorkingDirectory='$FLD_BIRDSHOME $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a Restart=always' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Service\]/a ExecStart=sh '$FLD_BIRDSHOME'/birds_dev.sh' $FLD_BIRDSHOME_SERV"
 
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV"
-  echo $password_inst | su - "$INSTALL_USER" -c "sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e '[Install]' $FLD_BIRDSHOME_SERV"
+  echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i '/^\[Unit\]/a WantedBy=multi-user.target' $FLD_BIRDSHOME_SERV"
 
 echo 'service birdshome created'
   echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
@@ -192,7 +192,7 @@ else
 fi
 
 touch /etc/nginx/sites-available/reverse-proxy.conf
-sed -i -e '$a\' -e 'server { \
+echo $password_inst | su - "$INSTALL_USER" -c "sudo sed -i -e '$a\' -e 'server { \
         listen 80; \
         listen [::]:80; \
 \
@@ -201,15 +201,14 @@ sed -i -e '$a\' -e 'server { \
 \
         location / {\
                     proxy_pass http://127.0.0.1:5000; \
-  }' /etc/nginx/sites-available/reverse-proxy.conf
-nginx -s reload
-
-ufw allow 22/tcp
-ufw allow 80
-ufw allow 443/tcp
-ufw allow 8443/tcp
-ufw limit https
-ufw reload
-ufw enable
-sudo systemctl restart smbd.service
-systemctl start birdshome
+  }' /etc/nginx/sites-available/reverse-proxy.conf"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo nginx -s reload"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 80"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw limit https"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw reload"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo ufw enable"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
