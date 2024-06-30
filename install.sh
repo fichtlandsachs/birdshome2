@@ -163,7 +163,7 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
     echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
 fi
 
-sed -i -e '$a\' -e '[Unit]' $FLD_BIRDSHOME_SERV
+su - "$INSTALL_USER" sh -c "echo [UNIT] >> /etc/systemd/system/birdshome.service &"
 sed -i '/^\[Unit\]/a Description=birdhome Service' $FLD_BIRDSHOME_SERV
 sed -i '/^\[Unit\]/a After=network.target' $FLD_BIRDSHOME_SERV
 sed -i -e '$a\' -e '[Service]' $FLD_BIRDSHOME_SERV
