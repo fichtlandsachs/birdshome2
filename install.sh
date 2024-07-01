@@ -116,25 +116,13 @@ echo 'start to configure samba share'
 sudo cp $SMB_CONF $SMB_CONF.original
 echo 'samba.conf saved to smd.conf.original'
 sudo cp $SMB_CONF $SMB_CONF_TMP
-sudo sed -i 's/workgroup = .*$/workgroup = smb/' $SMB_CONF_TMP
-echo 'changed workgroup to smb'
+sudo sed -i 's/workgroup = .*$/workgroup = workgroup/' $SMB_CONF_TMP
+echo 'changed workgroup to workgroup'
 sudo sed -i 's/security = .*$/security = user/' $SMB_CONF_TMP
 echo 'changed security to user'
 sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP
 echo 'changed map to guest to never'
 
-#if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
-  sudo tee -a $SMB_CONF_TMP << EOF
-  [bird_media]
-  path=$FLD_BIRDSHOME_MEDIA
-  public = yes
-  writable = yes
-  comment = video share
-  printable = no
-  guest ok = no
-  valid users = $SMB_USER, @$SMB_USER
-EOF
-#fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
   sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP
 else
@@ -189,6 +177,19 @@ if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"directo
 else
   sudo sed -i '/^\[bird_media\]/s directory mask = .*$/directory mask  = 0700' $SMB_CONF_TMP
 fi
+if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
+  sudo tee -a $SMB_CONF_TMP << EOF
+  [bird_media]
+  path=$FLD_BIRDSHOME_MEDIA
+  public = yes
+  writable = yes
+  comment = video share
+  printable = no
+  guest ok = no
+  valid users = $SMB_USER, @$SMB_USER
+EOF
+fi
+
 
 sudo mv $SMB_CONF_TMP $SMB_CONF
 echo "configuration $SMB_CONF updated"
