@@ -33,7 +33,7 @@ stty echo
 # last but not least request the user to set up the samba share
 echo "\nSamba User ID: \c"
 read -r SMB_USER
-echo "\nPlease enter the password for the samba user: \c"
+echo "Please enter the password for the samba user: \c"
 stty -echo
 read -r password_smb;
 stty echo
@@ -125,7 +125,7 @@ echo 'changed map to guest to never'
 
 if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
   sudo tee -a $SMB_CONF_TMP << EOF
-  [Unit]
+  [bird_media]
   path=$FLD_BIRDSHOME_MEDIA
   public = yes
   writable = yes
