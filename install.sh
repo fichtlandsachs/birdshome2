@@ -17,7 +17,7 @@ echo "Please enter the password for the installation user: \c"
 stty -echo
 read -r password_inst
 stty echo
-if ! getent group sudoer | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
   echo "\n\nInstalluser is not assigned to group sudoer"
   echo "\nInstallation aborted"
   exit
@@ -35,10 +35,10 @@ stty -echo
 
 # last but not least request the user to set up the samba share
 echo "\nSamba User ID: \c"
-read -r APP_USER
-echo "Please enter the password for the samba user: \c"
+read -r SMB_USER
+echo "\nPlease enter the password for the samba user: \c"
 stty -echo
-read -r password_app;
+read -r password_smb;
 stty echo
 stty -echo
 # start updateing the system using the install user
@@ -70,7 +70,8 @@ else
     echo "Group $APP_USER created"
 fi
 
-sudo adduser $APP_USER dialout users
+sudo adduser $APP_USER dialout
+sudo adduser $APP_USER users
 
 if [ ! -d "/etc/birdshome" ]; then
   sudo mkdir $FLD_BIRDSHOME_ROOT
@@ -86,7 +87,7 @@ if id -u $SMB_USER >/dev/null 2>&1; then
   echo "user $SMB_USER exists"
 else
   sudo useradd -s /bin/false $SMB_USER
-  sudo smbpasswd -a $SMB_USER
+  echo $password_smb | sudo passwd $SMB_USER
   echo "user $SMB_USER created"
 fi
 sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT
