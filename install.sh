@@ -9,19 +9,16 @@ FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
 SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 
-echo "Installation User ID:"
-read INSTALL_USER
-echo "Please enter the password for the installation user";
+echo "Installation User ID:" read -n 32 -r INSTALL_USER
+echo "Please enter the password for the installation user"
 stty -echo
-read password_inst;
+read -n 32 -r password_inst;
 stty echo
 
-echo "Application User ID:"
-read APP_USER
-
-echo "Please enter the password for the application user";
+echo "Application User ID:" read -n 32 -r APP_USER
+echo "Please enter the password for the application user"
 stty -echo
-read password_app;
+read -n 32 -r password_app;
 stty echo
 
 echo $password_inst | su -l "$INSTALL_USER"
@@ -219,7 +216,18 @@ server {
                     proxy_pass http://127.0.0.1:5000;
   }
 EOF
+
+sudo tee -a $FLD_BIRDSHOME_ROOT/birds_dev.sh << EOF
+#source env/bin/activate
+/bin/bash -c  "source /home/$APP_USER/birdshome/bin/activate; exec /bin/bash -i"
+gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
+deactivate
+EOF
+sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh
+
 sudo nginx -s reload
+
+echo "Set up minimum firewall ports"
 sudo ufw allow 22/tcp
 sudo ufw allow 80
 sudo ufw allow 443/tcp
@@ -227,6 +235,7 @@ sudo ufw allow 8443/tcp
 sudo ufw limit https
 sudo ufw reload
 sudo ufw --force enable
+echo "Firewall setup and enabled"
 sudo systemctl restart smbd.service
 sudo systemctl start birdshome
 cd ~
