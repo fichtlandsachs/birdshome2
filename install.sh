@@ -8,14 +8,16 @@ FLD_BIRDSHOME_MEDIA='/etc/birdshome/application/static/media'
 FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
 SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
+secret_key=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
+# request user for the installation process
 echo "Installation User ID: \c"
 read -r INSTALL_USER
 echo "Please enter the password for the installation user: \c"
 stty -echo
 read -r password_inst
 stty echo
-
+# request the new application user
 echo "\nApplication User ID: \c"
 read -r APP_USER
 echo "Please enter the password for the application user: \c"
@@ -23,10 +25,29 @@ stty -echo
 read -r password_app;
 stty echo
 stty -echo
+
+while [ $i -le 2 ]
+do
+if ! getent group sudoer | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+  echo "Installuser is not assigned to group sudoer"
+  echo "Installation aborted"
+  exit
+fi
+done
+
+
+# last but not least request the user to set up the samba share
+echo "\nSamba User ID: \c"
+read -r APP_USER
+echo "Please enter the password for the samba user: \c"
+stty -echo
+read -r password_app;
+stty echo
+stty -echo
+# start updateing the system using the install user
 echo $password_inst | su -l "$INSTALL_USER"
 stty echo
 cd ~
-
 
 sudo apt update && sudo apt -y upgrade
 # Install all required packages
