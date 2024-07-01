@@ -26,15 +26,11 @@ read -r password_app;
 stty echo
 stty -echo
 
-while [ $i -le 2 ]
-do
 if ! getent group sudoer | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
   echo "Installuser is not assigned to group sudoer"
   echo "Installation aborted"
   exit
 fi
-done
-
 
 # last but not least request the user to set up the samba share
 echo "\nSamba User ID: \c"
