@@ -123,7 +123,7 @@ echo 'changed security to user'
 sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP
 echo 'changed map to guest to never'
 
-if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
+#if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
   sudo tee -a $SMB_CONF_TMP << EOF
   [bird_media]
   path=$FLD_BIRDSHOME_MEDIA
@@ -134,7 +134,7 @@ if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
   guest ok = no
   valid users = $SMB_USER, @$SMB_USER
 EOF
-fi
+#fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
   sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP
 else
