@@ -111,7 +111,7 @@ echo "Leaving App User Context"
 echo $password_inst | su - "$INSTALL_USER"
 # Überprüfen, ob die Datei existiert
 if [ ! -f $SMB_CONF ]; then
-    echo "Konfigurationsdatei $SMB_CONF nicht gefunden!"
+    echo "Configuration $SMB_CONF not found!"
     exit 1
 fi
 stty echo
@@ -127,7 +127,9 @@ sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP
 echo 'changed map to guest to never'
 
 if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
-  sudo sed -i -e '$a\' -e '[bird_media]' $SMB_CONF_TMP
+  sudo tee -a $SMB_CONF_TMP << EOF
+  [Unit]
+EOF
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
   sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP
