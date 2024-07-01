@@ -9,19 +9,22 @@ FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
 SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 
-echo "Installation User ID:" read -n 32 -r INSTALL_USER
-echo "Please enter the password for the installation user"
+echo "Installation User ID: \c"
+read -r INSTALL_USER
+echo "Please enter the password for the installation user: \c"
 stty -echo
-read -n 32 -r password_inst;
+read -r password_inst
 stty echo
 
-echo "Application User ID:" read -n 32 -r APP_USER
-echo "Please enter the password for the application user"
+echo "\nApplication User ID: \c"
+read -r APP_USER
+echo "Please enter the password for the application user: \c"
 stty -echo
-read -n 32 -r password_app;
+read -r password_app;
 stty echo
-
+stty -echo
 echo $password_inst | su -l "$INSTALL_USER"
+stty echo
 cd ~
 
 
@@ -49,7 +52,7 @@ else
     echo "Group $APP_USER created"
 fi
 
-sudo adduser $APP_USER dialout
+sudo adduser $APP_USER dialout users
 
 if [ ! -d "/etc/birdshome" ]; then
   sudo mkdir $FLD_BIRDSHOME_ROOT
