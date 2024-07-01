@@ -29,9 +29,6 @@ echo "Please enter the password for the application user: \c"
 stty -echo
 read -r password_app;
 stty echo
-stty -echo
-
-
 
 # last but not least request the user to set up the samba share
 echo "\nSamba User ID: \c"
@@ -129,6 +126,13 @@ echo 'changed map to guest to never'
 if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
   sudo tee -a $SMB_CONF_TMP << EOF
   [Unit]
+  path=$FLD_BIRDSHOME_MEDIA
+  public = yes
+  writable = yes
+  comment = video share
+  printable = no
+  guest ok = no
+  valid users = $SMB_USER, @$SMB_USER
 EOF
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
@@ -166,12 +170,12 @@ else
   sudo sed -i '/^\[bird_media\]/s guest ok = .*$/guest ok = no' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"valid users"'/' | grep -q "valid users"; then
-  sudo sed -i '/^\[bird_media\]/a valid users = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP
+  sudo sed -i '/^\[bird_media\]/a valid users = $SMB_USER, @$SMB_USER' $SMB_CONF_TMP
 else
   sudo sed -i '/^\[bird_media\]/s valid users = .*$/valid users = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"write list"'/' | grep -q "write list"; then
-  sudo sed -i '/^\[bird_media\]/a write list = '$SMB_USER', @'$SMB_USER $SMB_CONF_TMP
+  sudo sed -i '/^\[bird_media\]/a write list = $SMB_USER, @$SMB_USER' $SMB_CONF_TMP
 else
   sudo sed -i '/^\[bird_media\]/s write list = .*$/write list = ${SMB_USER}, @${SMB_USER}' $SMB_CONF_TMP
 fi
