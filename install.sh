@@ -179,14 +179,14 @@ else
 fi
 if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
   sudo tee -a $SMB_CONF_TMP << EOF
-  [bird_media]
-  path=$FLD_BIRDSHOME_MEDIA
-  public = yes
-  writable = yes
-  comment = video share
-  printable = no
-  guest ok = no
-  valid users = $SMB_USER, @$SMB_USER
+[bird_media]
+   path=$FLD_BIRDSHOME_MEDIA
+   public = yes
+   writable = yes
+   comment = video share
+   printable = no
+   guest ok = no
+   valid users = $SMB_USER, @$SMB_USER
 EOF
 fi
 
