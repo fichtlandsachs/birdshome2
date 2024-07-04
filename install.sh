@@ -262,10 +262,12 @@ sudo ufw allow 80
 sudo ufw allow 443/tcp
 sudo ufw allow 8443/tcp
 sudo ufw limit https
+sudo ufw limit samba
 sudo ufw reload
 sudo ufw --force enable
 echo "Firewall setup and enabled"
 sudo systemctl restart smbd.service
+sudo systemctl restart nmbd.service
 sudo systemctl start birdshome
 cd ~
 rm -R -f /home/$INSTALL_USER/birdshome2
