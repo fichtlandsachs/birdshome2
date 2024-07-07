@@ -10,6 +10,9 @@ SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 secret_key=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
+wiptail --title "Nutzersetup"
+INSTALL_USER=$(whiptail "Installation User ID:" 10 30 3>&1 1>&2 2>&3)
+
 # request user for the installation process
 echo "Installation User ID: \c"
 read -r INSTALL_USER
