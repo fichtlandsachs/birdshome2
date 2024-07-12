@@ -36,6 +36,8 @@ while true; do
               else
                 if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
                   whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
+                else
+                  break
                 fi
               fi
             done
