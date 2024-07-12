@@ -27,24 +27,24 @@ while true; do
       "2" "Installation user password" \
       "3" "back" \
       3>&1 1>&2 2>&3)
-      case $OPTION_INSTALL_USER in
-        1)
-        INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
-          if [ -n "$INSTALL_USER" ]; then
-            whiptail --title "Installation user" --msgbox "Please provide a valid user"
-          else
-            if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-              whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
-            fi
-          fi;;
-        2)
-          password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3);;
-        3)
-          break;;
-        *)
-        ;;
-      esac
-      done
+        case $OPTION_INSTALL_USER in
+          1)
+          INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
+            if [ -n "$INSTALL_USER" ]; then
+              whiptail --title "Installation user" --msgbox "Please provide a valid user"
+            else
+              if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+                whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
+              fi
+            fi;;
+          2)
+            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3);;
+          3)
+            break;;
+          *)
+          ;;
+        esac
+      done;;
     2)
     while true; do
       OPTION_APP_USER=$(whiptail --title "Application User Setup" --menu "Provide the setup for the following option:" \
@@ -66,7 +66,7 @@ while true; do
       *)
       ;;
       esac
-    done
+    done;;
     3)
     while true; do
       OPTION_SMB_USER=$(whiptail --title "Samba User Setup" --menu "Provide the setup for the following option:" \
@@ -87,11 +87,11 @@ while true; do
         break;;
       *);;
       esac
+      done;;
     *)
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
     esac
-    done
 done
 
 sudo apt update && sudo apt -y upgrade
