@@ -26,7 +26,6 @@ while true; do
        15 60 6 \
       "1" "Installation user" \
       "2" "Installation user password" \
-      "3" "back" \
       3>&1 1>&2 2>&3)
         case $OPTION_INSTALL_USER in
           1)
@@ -54,9 +53,7 @@ while true; do
               fi
             done
               ;;
-            3)
-              break;;
-            *)
+            *) break
             ;;
         esac
       done;;
@@ -66,7 +63,6 @@ while true; do
        15 60 6 \
       "1" "Application user" \
       "2" "Application user password" \
-      "3" "back" \
       3>&1 1>&2 2>&3)
       case $OPTION_APP_USER in
       1)
@@ -85,9 +81,7 @@ while true; do
         fi
         done
         ;;
-      3)
-        break;;
-      *)
+      *) break
       ;;
       esac
     done
@@ -121,9 +115,7 @@ while true; do
         fi
         done
         ;;
-      3)
-        ;;
-      *);;
+      *) break;;
       esac
       done
       ;;
