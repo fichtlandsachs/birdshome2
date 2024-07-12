@@ -20,6 +20,7 @@ while true; do
 
   case $OPTION_MAIN in
     1)
+      while true; do
       OPTION_INSTALL_USER=$(whiptail --title "Installation User Setup" --menu "Provide the setup for the following option:" \
        15 60 6 \
       "1" "Installation user" \
@@ -42,8 +43,10 @@ while true; do
           break;;
         *)
         ;;
-      esac;;
+      esac
+      done
     2)
+    while true; do
       OPTION_APP_USER=$(whiptail --title "Application User Setup" --menu "Provide the setup for the following option:" \
        15 60 6 \
       "1" "Application user" \
@@ -62,8 +65,10 @@ while true; do
         break;;
       *)
       ;;
-      esac;;
+      esac
+    done
     3)
+    while true; do
       OPTION_SMB_USER=$(whiptail --title "Samba User Setup" --menu "Provide the setup for the following option:" \
        15 60 6 \
       "1" "Samba user" \
@@ -81,11 +86,12 @@ while true; do
       3)
         break;;
       *);;
-      esac;;
+      esac
     *)
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
     esac
+    done
 done
 
 sudo apt update && sudo apt -y upgrade
