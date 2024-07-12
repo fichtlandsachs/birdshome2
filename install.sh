@@ -10,8 +10,49 @@ SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 secret_key=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
-wiptail --title "Nutzersetup"
-INSTALL_USER=$(whiptail "Installation User ID:" 10 30 3>&1 1>&2 2>&3)
+
+while true; do
+  OPTION_MAIN=$(whiptail --title "Application Setup" --menu "Provide the setup for the following option:" \
+   15 60 6 \
+  "1" "Installation user setup" \
+  "2" "application user setup" \
+  "3" "samba user setup" \
+  3>&1 1>&2 2>&3)
+
+  case $OPTION_MAIN in
+    1)
+      $INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+        exit
+      fi
+      $password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+          exit
+      fi;;
+    2)
+      $APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+        exit
+      fi
+      $password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+          exit
+      fi;;
+    3)
+      $SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+        exit
+      fi
+      $password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 3>&1 1>&2 2>&3)
+      if [ $exitstatus != 0 ]; then
+          exit
+      fi;;
+    *)
+      whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
+      ;;
+    esca
+done
+ IFS=$'\n' read -r -d '' -a inputs <<< '$user_dialog'
 
 # request user for the installation process
 echo "Installation User ID: \c"
@@ -45,7 +86,7 @@ stty -echo
 echo $password_inst | su -l "$INSTALL_USER"
 stty echo
 cd ~
-
+done
 sudo apt update && sudo apt -y upgrade
 # Install all required packages
 sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
