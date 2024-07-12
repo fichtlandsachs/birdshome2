@@ -16,7 +16,7 @@ while true; do
   "1" "Installation user setup" \
   "2" "application user setup" \
   "3" "samba user setup" \
-  "4" "Start installation"
+  "4" "Start installation" \
   3>&1 1>&2 2>&3)
 
   case $OPTION_MAIN in
