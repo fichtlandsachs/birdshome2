@@ -21,38 +21,62 @@ while true; do
   case $OPTION_MAIN in
     1)
       option_install_user=$(whiptail --title "Installation User Setup" --menu "Provide the setup for the following option:" \
-   15 60 6 \
-  "1" "Installation user" \
-  "2" "Installation user password" \
-  "3" "samba user setup" \
-  3>&1 1>&2 2>&3)
+       15 60 6 \
+      "1" "Installation user" \
+      "2" "Installation user password" \
+      "3" "back" \
+      3>&1 1>&2 2>&3);;
+      1)
       INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
-      if [ -n "$INSTALL_USER" ]; then
-        whiptail --title "Installation user" --msgbox "Please provide a valid user"
-      else
-        if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-          whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
+        if [ -n "$INSTALL_USER" ]; then
+          whiptail --title "Installation user" --msgbox "Please provide a valid user"
         else
-          password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
-          break
-        fi
-      fi;;
+          if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+            whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
+          fi
+        fi;;
+      2)
+        password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3);;
+      3)
+        break;;
+      *)
+      ;;
     2)
-      APP_USER=$(whiptail --title "Application user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
-      if [ -n "$INSTALL_USER" ]; then
-        whiptail --title "Application user" --msgbox "Please provide a valid user"
-      else
-          password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
-          break
-      fi;;
+      option_app_user=$(whiptail --title "Application User Setup" --menu "Provide the setup for the following option:" \
+       15 60 6 \
+      "1" "Application user" \
+      "2" "Application user password" \
+      "3" "back" \
+      3>&1 1>&2 2>&3);;
+      1)
+      APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
+        if [ -n "$APP_USER" ]; then
+          whiptail --title "Application user" --msgbox "Please provide a valid user"
+        fi;;
+      2)
+        password_app=$(whiptail --title "Application user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3);;
+      3)
+        break;;
+      *)
+      ;;
     3)
-      SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
-      if [ -n "$INSTALL_USER" ]; then
-        whiptail --title "Samba user" --msgbox "Please provide a valid user"
-      else
-          password_smb=$(whiptail --title "samba user" --passwordbox "samba password:" 3>&1 1>&2 2>&3)
-          break
-      fi;;
+      option_smb_user=$(whiptail --title "Samba User Setup" --menu "Provide the setup for the following option:" \
+       15 60 6 \
+      "1" "Samba user" \
+      "2" "Samba user password" \
+      "3" "back" \
+      3>&1 1>&2 2>&3);;
+      1)
+        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
+        if [ -n "$SMB_USER" ]; then
+          whiptail --title "Samba user" --msgbox "Please provide a valid user"
+        fi;;
+      2)
+        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 3>&1 1>&2 2>&3);;
+      3)
+        break;;
+      *)
+      ;;
     *)
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
