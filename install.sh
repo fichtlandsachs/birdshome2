@@ -75,7 +75,7 @@ while true; do
         while true; do
         password_app=$(whiptail --title "Application user" --passwordbox "Installation password:" \
         10 60 3>&1 1>&2 2>&3)
-        if [ -z "$password_app"]
+        if [ -z "$password_app" ]; then
            whiptail --title "Application user" --msgbox "Please provide a password" 10 60
         else
           break
