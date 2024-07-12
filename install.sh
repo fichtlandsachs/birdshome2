@@ -29,7 +29,7 @@ while true; do
       3>&1 1>&2 2>&3)
         case $OPTION_INSTALL_USER in
           1)
-          INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
+          INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60)
             if [ -n "$INSTALL_USER" ]; then
               whiptail --title "Installation user" --msgbox "Please provide a valid user"
             else
@@ -38,7 +38,7 @@ while true; do
               fi
             fi;;
           2)
-            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3);;
+            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60);;
           3)
             break;;
           *)
