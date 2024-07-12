@@ -10,7 +10,6 @@ SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 secret_key=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
-
 while true; do
   OPTION_MAIN=$(whiptail --title "Application Setup" --menu "Provide the setup for the following option:" \
    15 60 6 \
