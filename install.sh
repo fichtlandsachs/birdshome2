@@ -20,72 +20,45 @@ while true; do
 
   case $OPTION_MAIN in
     1)
+      option_install_user=$(whiptail --title "Installation User Setup" --menu "Provide the setup for the following option:" \
+   15 60 6 \
+  "1" "Installation user" \
+  "2" "Installation user password" \
+  "3" "samba user setup" \
+  3>&1 1>&2 2>&3)
       INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-        exit
-      fi
-      password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-          exit
+      if [ -n "$INSTALL_USER" ]; then
+        whiptail --title "Installation user" --msgbox "Please provide a valid user"
+      else
+        if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+          whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
+        else
+          password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
+          break
+        fi
       fi;;
     2)
-      APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-        exit
-      fi
-      password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-          exit
+      APP_USER=$(whiptail --title "Application user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
+      if [ -n "$INSTALL_USER" ]; then
+        whiptail --title "Application user" --msgbox "Please provide a valid user"
+      else
+          password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
+          break
       fi;;
     3)
       SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-        exit
-      fi
-      password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 3>&1 1>&2 2>&3)
-      if [ $exitstatus != 0 ]; then
-          exit
+      if [ -n "$INSTALL_USER" ]; then
+        whiptail --title "Samba user" --msgbox "Please provide a valid user"
+      else
+          password_smb=$(whiptail --title "samba user" --passwordbox "samba password:" 3>&1 1>&2 2>&3)
+          break
       fi;;
     *)
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
     esac
 done
- IFS=$'\n' read -r -d '' -a inputs <<< '$user_dialog'
 
-# request user for the installation process
-echo "Installation User ID: \c"
-read -r INSTALL_USER
-echo "Please enter the password for the installation user: \c"
-stty -echo
-read -r password_inst
-stty echo
-if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-  echo "\n\nInstalluser is not assigned to group sudoer"
-  echo "\nInstallation aborted"
-  exit
-fi
-# request the new application user
-echo "\nApplication User ID: \c"
-read -r APP_USER
-echo "Please enter the password for the application user: \c"
-stty -echo
-read -r password_app;
-stty echo
-
-# last but not least request the user to set up the samba share
-echo "\nSamba User ID: \c"
-read -r SMB_USER
-echo "Please enter the password for the samba user: \c"
-stty -echo
-read -r password_smb;
-stty echo
-stty -echo
-# start updateing the system using the install user
-echo $password_inst | su -l "$INSTALL_USER"
-stty echo
-cd ~
-done
 sudo apt update && sudo apt -y upgrade
 # Install all required packages
 sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
