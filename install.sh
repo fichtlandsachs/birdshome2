@@ -31,14 +31,16 @@ while true; do
           1)
           INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 3>&1 1>&2 2>&3)
             if [ -n "$INSTALL_USER" ]; then
-              whiptail --title "Installation user" --msgbox "Please provide a valid user"
+              whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
             else
               if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-                whiptail --title "Installation user" --msgbox "Users permissions not sufficient"
+                whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
               fi
             fi;;
           2)
-            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60);;
+            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 \
+            3>&1 1>&2 2>&3)
+            ;;
           3)
             break;;
           *)
@@ -55,12 +57,14 @@ while true; do
       3>&1 1>&2 2>&3)
       case $OPTION_APP_USER in
       1)
-      APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
+      APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 3>&1 1>&2 2>&3)
         if [ -n "$APP_USER" ]; then
-          whiptail --title "Application user" --msgbox "Please provide a valid user"
+          whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
         fi;;
       2)
-        password_app=$(whiptail --title "Application user" --passwordbox "Installation password:");;
+        password_app=$(whiptail --title "Application user" --passwordbox "Installation password:" \
+        10 60 3>&1 1>&2 2>&3)
+        ;;
       3)
         break;;
       *)
@@ -78,13 +82,13 @@ while true; do
       3>&1 1>&2 2>&3)
       case $OPTION_SMB_USER in
       1)
-        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:")
+        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 3>&1 1>&2 2>&3)
         if [ -n "$SMB_USER" ]; then
-          whiptail --title "Samba user" --msgbox "Please provide a valid user"
+          whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
         fi
         ;;
       2)
-        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:")
+        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 10 60 3>&1 1>&2 2>&3)
         ;;
       3)
         break;;
