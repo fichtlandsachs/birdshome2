@@ -18,7 +18,7 @@ while true; do
   "3" "samba user setup" \
   "4" "Start installation" \
   3>&1 1>&2 2>&3)
-
+if [ $? -eq 0 ]; then
   case $OPTION_MAIN in
     1)
       while true; do
@@ -27,6 +27,7 @@ while true; do
       "1" "Installation user" \
       "2" "Installation user password" \
       3>&1 1>&2 2>&3)
+      if [ $? -eq 0 ]; then
         case $OPTION_INSTALL_USER in
           1)
           while true; do
@@ -60,6 +61,8 @@ while true; do
             *) break
             ;;
         esac
+          break
+        fi
       done;;
     2)
     while true; do
@@ -68,6 +71,7 @@ while true; do
       "1" "Application user" \
       "2" "Application user password" \
       3>&1 1>&2 2>&3)
+      if [ $? -eq 0 ]; then
       case $OPTION_APP_USER in
       1)
       APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 3>&1 1>&2 2>&3)
@@ -88,6 +92,9 @@ while true; do
       *) break
       ;;
       esac
+      else
+        break
+      fi
     done
     ;;
     3)
@@ -98,6 +105,7 @@ while true; do
       "2" "Samba user password" \
       "3" "back" \
       3>&1 1>&2 2>&3)
+      if [ $? -eq 0 ]; then
       case $OPTION_SMB_USER in
       1)
         while true; do
@@ -121,6 +129,9 @@ while true; do
         ;;
       *) break;;
       esac
+      else
+        break
+      fi
       done
       ;;
     4)
@@ -130,7 +141,9 @@ while true; do
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
     esac
+  fi
 done
+
 
 sudo apt update && sudo apt -y upgrade
 # Install all required packages
