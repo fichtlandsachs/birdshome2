@@ -31,6 +31,7 @@ while true; do
           1)
           while true; do
             INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 3>&1 1>&2 2>&3)
+              if [ $? -eq 0 ]; then
               if [ -z "$INSTALL_USER" ]; then
                 whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
               else
@@ -39,6 +40,9 @@ while true; do
                 else
                   break
                 fi
+              fi
+              else
+                break
               fi
             done
             ;;
