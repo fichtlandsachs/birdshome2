@@ -29,22 +29,32 @@ while true; do
       3>&1 1>&2 2>&3)
         case $OPTION_INSTALL_USER in
           1)
-          INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 3>&1 1>&2 2>&3)
-            if [ -n "$INSTALL_USER" ]; then
-              whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
-            else
-              if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-                whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
+          while true; do
+            INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 3>&1 1>&2 2>&3)
+              if [ -z "$INSTALL_USER" ]; then
+                whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
+              else
+                if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+                  whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
+                fi
               fi
-            fi;;
-          2)
-            password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 \
-            3>&1 1>&2 2>&3)
+            done
             ;;
-          3)
-            break;;
-          *)
-          ;;
+            2)
+            while true; do
+              password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 \
+              3>&1 1>&2 2>&3)
+              if [ -z "$password_inst" ]; then
+                 whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
+              else
+                break
+              fi
+            done
+              ;;
+            3)
+              break;;
+            *)
+            ;;
         esac
       done;;
     2)
@@ -58,12 +68,19 @@ while true; do
       case $OPTION_APP_USER in
       1)
       APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 3>&1 1>&2 2>&3)
-        if [ -n "$APP_USER" ]; then
+        if [ -z "$APP_USER" ]; then
           whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
         fi;;
       2)
+        while true; do
         password_app=$(whiptail --title "Application user" --passwordbox "Installation password:" \
         10 60 3>&1 1>&2 2>&3)
+        if [ -z "$password_app"]
+           whiptail --title "Application user" --msgbox "Please provide a password" 10 60
+        else
+          break
+        fi
+        done
         ;;
       3)
         break;;
@@ -82,13 +99,24 @@ while true; do
       3>&1 1>&2 2>&3)
       case $OPTION_SMB_USER in
       1)
+        while true; do
         SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 3>&1 1>&2 2>&3)
-        if [ -n "$SMB_USER" ]; then
-          whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
+        if [ -z "$SMB_USER" ]; then
+          whiptail --title "Samba user" --msgbox "Please provide a user id" 10 60
+        else
+          break
         fi
+        done
         ;;
       2)
+        while true; do
         password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 10 60 3>&1 1>&2 2>&3)
+        if [ -z "$password_smb" ]; then
+          whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
+        else
+          break
+        fi
+        done
         ;;
       3)
         break;;
