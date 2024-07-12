@@ -20,36 +20,36 @@ while true; do
 
   case $OPTION_MAIN in
     1)
-      $INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
+      INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
         exit
       fi
-      $password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
+      password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
           exit
       fi;;
     2)
-      $APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
+      APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
         exit
       fi
-      $password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
+      password_app=$(whiptail --title "Application user" --passwordbox "Application password:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
           exit
       fi;;
     3)
-      $SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
+      SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
         exit
       fi
-      $password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 3>&1 1>&2 2>&3)
+      password_smb=$(whiptail --title "Samba user" --passwordbox "Samba password:" 3>&1 1>&2 2>&3)
       if [ $exitstatus != 0 ]; then
           exit
       fi;;
     *)
       whiptail --title "Application Setup" --msgbox"invalid Option" 3>&1 1>&2 2>&3
       ;;
-    esca
+    esac
 done
  IFS=$'\n' read -r -d '' -a inputs <<< '$user_dialog'
 
