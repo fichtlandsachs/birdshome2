@@ -128,7 +128,7 @@ if id -u $APP_USER >/dev/null 2>&1; then
   echo "user $APP_USER exists"
 else
   echo $password_inst | su - $INSTALL_USER -c "sudo useradd -g users -G pi -m $APP_USER"
-  echo $password_inst | su - $INSTALL_USER -c "echo $password_app |   sudo passwd $APP_USER"
+  echo $password_inst | su - $INSTALL_USER -c "echo $password_app | sudo passwd $APP_USER"
 fi
 
 if getent group "$APP_USER" >/dev/null; then
@@ -154,7 +154,7 @@ if id -u $SMB_USER >/dev/null 2>&1; then
   echo "user $SMB_USER exists"
 else
 echo $password_inst | su - $INSTALL_USER -c "sudo useradd -s /bin/false $SMB_USER"
-  echo $password_smb | sudo passwd $SMB_USER
+  su - $INSTALL_USER -c "echo $password_smb | sudo passwd $SMB_USER"
   echo "user $SMB_USER created"
 fi
 echo $password_inst | su - $INSTALL_USER -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
