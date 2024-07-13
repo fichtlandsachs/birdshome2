@@ -275,7 +275,7 @@ echo $password_inst | su - $INSTALL_USER -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
 echo $password_inst | su - $INSTALL_USER -c "sudo rm $SMB_CONF_TMP"
 
-echo $password_inst | su - $INSTALL_USER -c "sudo touch  $FLD_BIRDSHOME_SERV
+echo $password_inst | su - $INSTALL_USER -c "sudo touch  $FLD_BIRDSHOME_SERV"
 PID=$!
 wait $PID
 if [ $? -eq 0 ]; then
@@ -285,7 +285,7 @@ if [ -f $FLD_BIRDSHOME_SERV ]; then
     echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
 fi
 
-sudo tee -a $FLD_BIRDSHOME_SERV << EOF
+echo $password_inst | su - $INSTALL_USER -c "sudo tee -a $FLD_BIRDSHOME_SERV << EOF
 [Unit]
 Description=birdhome Service
 After=network.target'
