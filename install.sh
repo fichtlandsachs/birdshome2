@@ -105,7 +105,7 @@ else
     esac
   done
 fi
-echo $CHOICES
+
 if [ -z $INSTALL_USER ]; then
   exit
 fi
@@ -115,8 +115,8 @@ fi
 if [ -z $SMB_USER ]; then
   whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
 fi
-
-sudo apt update && sudo apt -y upgrade
+echo $password_inst | su -c sudo apt update $INSTALL_USER
+echo $password_inst | su -c sudo apt -y upgrade $INSTALL_USER
 # Install all required packages
 sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
  gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev libopenexr-dev libopencv-dev \
