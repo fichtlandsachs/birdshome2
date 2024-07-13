@@ -17,7 +17,7 @@ CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 35 5 \
   "3" "Set Samba User" ON \
   "4" "The fourth option" OFF 3>&1 1>&2 2>&3)
 
-if [ -z "$CHOICE" ]; then
+if [ -z "$CHOICES" ]; then
   echo "No option was selected (user hit Cancel or unselected all options)"
 else
   for CHOICE in $CHOICES; do
@@ -101,6 +101,7 @@ else
     esac
   done
 fi
+echo $CHOICES
 if [ -z $INSTALL_USER ]; then
   exit
 fi
