@@ -158,7 +158,7 @@ echo "$password_inst" | su - "$INSTALL_USER" -c "sudo useradd -s /bin/false $SMB
   su - "$INSTALL_USER" -c "echo '$APP_USER:$password_app' | sudo chpasswd"
   echo "user $SMB_USER created"
 fi
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R '$APP_USER:$APP_USER' '$FLD_BIRDSHOME_ROOT'"
+echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
 stty -echo
 echo "Change User context to $APP_USER"
 # switch to user context and create the virtual environment
