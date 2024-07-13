@@ -115,13 +115,13 @@ fi
 if [ -z $SMB_USER ]; then
   whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
 fi
-echo $password_inst | su 'sudo apt update && sudo apt -y upgrade' - $INSTALL_USER
+echo $password_inst | su -c 'sudo apt update && sudo apt -y upgrade' - $INSTALL_USER
 # Install all required packages
-echo $password_inst | su 'sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
+echo $password_inst | su -c 'sudo apt install -y samba gunicorn nginx build-essential libssl-dev libffi-dev libgstreamer1.0-dev \
  gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev libopenexr-dev libopencv-dev \
  libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev software-properties-common ufw \
  libopenblas-dev' - $INSTALL_USER
-echo $password_inst | su 'sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy \
+echo $password_inst | su -c 'sudo apt install -y python3-virtualenv python3-dev python3-pip python3-setuptools python3-venv python3-numpy \
   python3-opencv' - $INSTALL_USER
 #create the user for teh application
 if id -u $APP_USER >/dev/null 2>&1; then
