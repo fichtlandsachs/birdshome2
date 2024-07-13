@@ -53,13 +53,13 @@ else
     # ask for user ID and will be created later on
       while true; do
         APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 3>&1 1>&2 2>&3)
-          if [ $? -eq 0 ]; then
-            if [ -z "$APP_USER" ]; then
-              whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
-            fi
+        if [ $? -eq 0 ]; then
+          if [ -z "$APP_USER" ]; then
+            whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
           else
-            break
+           break
           fi
+        fi
       done
     # request the user password for installation reasons
       while true; do
@@ -79,9 +79,9 @@ else
           if [ $? -eq 0 ]; then
             if [ -z "$SMB_USER" ]; then
               whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
+            else
+              break
             fi
-          else
-            break
           fi
       done
     # request the user password for installation reasons
