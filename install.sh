@@ -288,8 +288,8 @@ fi
 
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << EOF
 [Unit]
-Description=birdhome Service
-After=network.target'
+Description=birdshome Service
+After=network.target
 
 [Service]
 Type=simple
@@ -329,7 +329,7 @@ EOF"
 
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_ROOT/birds_dev.sh << EOF
 #source env/bin/activate
-/bin/bash -c  source /home/$APP_USER/birdshome/bin/activate; exec /bin/bash -i
+/bin/bash -c  'source /home/$APP_USER/birdshome/bin/activate'; exec /bin/bash -i
 gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
 deactivate
 EOF"
