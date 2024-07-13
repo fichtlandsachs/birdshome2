@@ -144,8 +144,9 @@ if [ ! -d "/etc/birdshome" ]; then
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
   echo "Folder $FLD_BIRDSHOME_ROOT created!"
 fi
-
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
+if [ -f "/etc/systemd/system/birdshome.service" ]; then
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
+fi
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
 
 sleep 2s
