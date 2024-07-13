@@ -57,6 +57,8 @@ else
             if [ -z "$APP_USER" ]; then
               whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
             fi
+          else
+            break
           fi
       done
     # request the user password for installation reasons
@@ -78,6 +80,8 @@ else
             if [ -z "$SMB_USER" ]; then
               whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
             fi
+          else
+            break
           fi
       done
     # request the user password for installation reasons
