@@ -397,7 +397,6 @@ cleanup_old_installation(){
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
 
     for entry in $FLD_BIRDSHOME_ROOT'/*'; do
-	  echo $entry
       if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
