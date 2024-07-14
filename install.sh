@@ -168,18 +168,20 @@ create_folder_structure(){
     echo "Folder $FLD_BIRDSHOME created!"
   fi
 
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application \
- /etc/birdshome/application"
-echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/forms/* \
- /etc/birdshome/application/forms"
-echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/handler/* \
- /etc/birdshome/application/handler"
-echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/templates/* \
- /etc/birdshome/application/templates"
 }
 copy_application(){
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
+  #echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/* /etc/birdshome/*"
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application/* \
+ $FLD_BIRDSHOME/*"
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application/forms/* \
+ $FLD_BIRDSHOME/forms/*"
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application/handler/* \
+ $FLD_BIRDSHOME/handler/*"
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application/templates/* \
+ $FLD_BIRDSHOME/templates/*"
+
+
 }
 python_setup(){
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
@@ -411,6 +413,7 @@ application_setup() {
     setup_app_configuration
     create_startup_service
     cleanup
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
 }
 #ask for user and required passwords to run the installation und setup user
 installation_dialog
