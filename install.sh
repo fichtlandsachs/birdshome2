@@ -25,7 +25,7 @@ else
     "1")
     # ask for user ID and validate if the user is in Group sudo
       while true; do
-        INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 3>&1 1>&2 2>&3)
+        INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 "pi" 3>&1 1>&2 2>&3)
           if [ $? -eq 0 ]; then
             if [ -z "$INSTALL_USER" ]; then
               whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
@@ -40,7 +40,7 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 \
+        password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"tachpost"  \
         3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_inst" ]; then
            whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
@@ -52,7 +52,7 @@ else
     "2")
     # ask for user ID and will be created later on
       while true; do
-        APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 3>&1 1>&2 2>&3)
+        APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "birdie" 3>&1 1>&2 2>&3)
         if [ $? -eq 0 ]; then
           if [ -z "$APP_USER" ]; then
             whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
@@ -63,7 +63,7 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_app=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 \
+        password_app=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 "tachpost"\
         3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_app" ]; then
            whiptail --title "Application user" --msgbox "Please provide a password" 10 60
@@ -75,7 +75,7 @@ else
     "3")
     # ask for user ID and will be created later on
       while true; do
-        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 3>&1 1>&2 2>&3)
+        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "birdiesmb" 3>&1 1>&2 2>&3)
           if [ $? -eq 0 ]; then
             if [ -z "$SMB_USER" ]; then
               whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
@@ -86,8 +86,8 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 \
-        3>&1 1>&2 2>&3)
+        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 "tachpost"\
+         3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_smb" ]; then
            whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
         else
@@ -159,29 +159,39 @@ prepare_system(){
   fi
 }
 create_folder_structure(){
-  if [ ! -d "/etc/birdshome" ]; then
+  if [ ! -d "$FLD_BIRDSHOME_ROOT" ]; then
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
     echo "Folder $FLD_BIRDSHOME_ROOT created!"
   fi
-  if [ ! -d "/etc/birdshome/application" ]; then
+  if [ ! -d "$FLD_BIRDSHOME" ]; then
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME"
     echo "Folder $FLD_BIRDSHOME created!"
   fi
 
 }
 copy_application(){
-  #echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/* /etc/birdshome/*"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application/* \
- $FLD_BIRDSHOME/*"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp -r /home/$INSTALL_USER/birdshome2/application/forms/* \
- $FLD_BIRDSHOME/forms/*"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp -r /home/$INSTALL_USER/birdshome2/application/handler/* \
- $FLD_BIRDSHOME/handler/*"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cp -r /home/$INSTALL_USER/birdshome2/application/templates/* \
- $FLD_BIRDSHOME/templates/*"
+  source_folder="/home/$INSTALL_USER/birdshome2"
+  file_arr=($source_folder'/*')
 
+  for entry in ${file_arr[@]}; do
+    copy_folder="$entry"
+    file=$(basename $entry)
+    target_folder="$FLD_BIRDSHOME_ROOT/$file"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "cp $copy_folder $target_folder"
+  done
+  source_folder="/home/$INSTALL_USER/birdshome2/application"
+  folder_structure+=("/forms" "/handler" "/templates")
 
+  # shellcheck disable=SC2068
+  for entry in ${folder_structure[@]}; do
+	copy_folder="$source_folder$entry/*"
+	file_arr=($copy_folder)
+    for file_entry in ${file_arr[@]}; do
+      file=$(basename $file_entry)
+      target_folder="$FLD_BIRDSHOME/$entry/$file"
+      echo "$password_inst" | su - "$INSTALL_USER" -c "cp $file_entry $target_folder"
+    done
+  done
 }
 python_setup(){
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
@@ -378,7 +388,8 @@ start_system() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
 }
 cleanup() {
-  echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+  #echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+  echo 'end'
 }
 cleanup_old_installation(){
   if [ -d "$FLD_BIRDSHOME_ROOT" ]; then
@@ -387,32 +398,33 @@ cleanup_old_installation(){
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
 
     for entry in $FLD_BIRDSHOME_ROOT'/*'; do
-      if [[ -f "$entry" ]]; then
+	  echo $entry
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/*'; do
-      if [[ -f "$entry" ]]; then
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/handler/*'; do
-      if [[ -f "$entry" ]]; then
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/forms/*'; do
-      if [[ -f "$entry" ]]; then
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/sensors/*'; do
-      if [[ -f "$entry" ]]; then
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/templates/*'; do
-      if [[ -f "$entry" ]]; then
+      if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
@@ -423,15 +435,15 @@ setup_app_configuration() {
     existing_config="$FLD_BIRDSHOME_ROOT"/birdshome.json
     tmp_config="$FLD_BIRDSHOME_ROOT"/birdshome_tmp.json
     new_config="$FLD_BIRDSHOME_ROOT"/birdshome_new.json
-    hostname=$(echo "$password_app" | su - "$APP_USER" -c "cat /proc/sys/kernel/hostname")
-    echo "$password_app" | su - "$APP_USER" -c "cp '$existing_config' '$new_config'"
-    echo "$password_app" | su - "$APP_USER" -c "jq 'system.application_user = '$APP_USER'" $new_config > \
+    hostname=$(echo "$password_inst" | su - "$INSTALL_USER" -c "cat /proc/sys/kernel/hostname")
+    echo "$password_inst" | su - "$INSTALL_USER" -c "cp $existing_config $new_config"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'system.application_user = '$INSTALL_USER'" $new_config > \
     $tmp_config && mv $tmp_config $new_config
-    echo "$password_app" | su - "$APP_USER" -c "jq 'system.secret_key = '$SECRET_KEY" $new_config > \
+    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'system.secret_key = '$SECRET_KEY" $new_config > \
     $tmp_config && mv $tmp_config $new_config
-    echo "$password_app" | su - "$APP_USER" -c "jq 'video.video_prefix = '$hostname'_'" $new_config > \
+    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'video.video_prefix = '$hostname'_'" $new_config > \
     $tmp_config && mv $tmp_config $new_config
-    echo "$password_app" | su - "$APP_USER" -c "mv '$new_config' '$existing_config'"
+    #echo "$password_inst" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
 }
 application_setup() {
     cleanup_old_installation
