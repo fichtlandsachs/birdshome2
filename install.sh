@@ -382,6 +382,7 @@ cleanup() {
 }
 cleanup_old_installation(){
   if [ -d "/etc/birdshome" ]; then
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
     echo 'existing installation found'
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/*'"
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME_ROOT'/*'"
