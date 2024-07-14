@@ -25,7 +25,7 @@ else
     "1")
     # ask for user ID and validate if the user is in Group sudo
       while true; do
-        INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 "pi" 3>&1 1>&2 2>&3)
+        INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
           if [ $? -eq 0 ]; then
             if [ -z "$INSTALL_USER" ]; then
               whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
@@ -40,7 +40,7 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"tachpost"  \
+        password_inst=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	""  \
         3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_inst" ]; then
            whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
@@ -52,7 +52,7 @@ else
     "2")
     # ask for user ID and will be created later on
       while true; do
-        APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "birdie" 3>&1 1>&2 2>&3)
+        APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" 3>&1 1>&2 2>&3)
         if [ $? -eq 0 ]; then
           if [ -z "$APP_USER" ]; then
             whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
@@ -63,7 +63,7 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_app=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 "tachpost"\
+        password_app=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 ""\
         3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_app" ]; then
            whiptail --title "Application user" --msgbox "Please provide a password" 10 60
@@ -75,7 +75,7 @@ else
     "3")
     # ask for user ID and will be created later on
       while true; do
-        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "birdiesmb" 3>&1 1>&2 2>&3)
+        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "" 3>&1 1>&2 2>&3)
           if [ $? -eq 0 ]; then
             if [ -z "$SMB_USER" ]; then
               whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
@@ -86,7 +86,7 @@ else
       done
     # request the user password for installation reasons
       while true; do
-        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 "tachpost"\
+        password_smb=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 ""\
          3>&1 1>&2 2>&3)
         if [ $? -eq 0 ] && [ -z "$password_smb" ]; then
            whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
