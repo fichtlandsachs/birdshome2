@@ -10,7 +10,7 @@ SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
 SECRET_KEY=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
-function installation_dialog() {
+installation_dialog(){
     CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 35 5 \
   "1" "Set Installation User" ON \
   "2" "Set Application User" ON \
@@ -116,7 +116,7 @@ if [ -z "$SMB_USER" ]; then
   whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
 fi
 }
-function basic_setup(){
+basic_setup(){
   #update the system to the latest patchset
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
   # Install all required packages
@@ -126,7 +126,7 @@ function basic_setup(){
   software-properties-common ufw  libopenblas-dev jq"
 
 }
-function user_setup(){
+user_setup(){
    #create the user for teh application
   if id -u "$APP_USER" >/dev/null 2>&1; then
     echo "user $APP_USER exists"
@@ -153,12 +153,12 @@ function user_setup(){
 echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$SMB_USER:$password_smb' | sudo smbpasswd"
 
 }
-function prepare_system(){
+prepare_system(){
   if [ -f "/etc/systemd/system/birdshome.service" ]; then
    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
   fi
 }
-function create_folder_structure(){
+create_folder_structure(){
   if [ ! -d "/etc/birdshome" ]; then
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
     echo "Folder $FLD_BIRDSHOME_ROOT created!"
@@ -178,10 +178,10 @@ echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshom
 echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/templates/* \
  /etc/birdshome/application/templates"
 }
-function copy_application(){
+copy_application(){
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
 }
-function python_setup(){
+python_setup(){
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
   python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps python-all-dev"
   echo "Change User context to $APP_USER"
@@ -198,7 +198,7 @@ function python_setup(){
   sleep 10s
   echo "Leaving App User Context"
 }
-function samba_setup(){
+samba_setup(){
   if [ ! -f $SMB_CONF ]; then
     echo "Configuration $SMB_CONF not found!"
     exit 1
@@ -296,7 +296,7 @@ echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF
 echo "configuration $SMB_CONF updated"
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm $SMB_CONF_TMP"
 }
-function create_startup_service() {
+create_startup_service() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
 if [ $? -eq 0 ]; then
     echo "File $FLD_BIRDSHOME_SERV created"
@@ -328,7 +328,7 @@ gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
 EOF"
 echo $password_inst | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh"
 }
-function update_nginx(){
+update_nginx(){
 
 if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
     echo "Konfigurationsdatei /etc/nginx/sites-enabled/default gefunden!"
@@ -350,7 +350,7 @@ server {
 EOF"
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo nginx -s reload"
 }
-function system_setup() {
+system_setup() {
   basic_setup
   user_setup
   prepare_system
@@ -367,7 +367,7 @@ function system_setup() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
   echo "Firewall setup and enabled"
 }
-function start_system() {
+start_system() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
@@ -375,10 +375,10 @@ function start_system() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart nmbd.service"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
 }
-function cleanup() {
+cleanup() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
 }
-function cleanup_old_installation(){
+cleanup_old_installation(){
   if [ -d "/etc/birdshome" ]; then
     echo 'existing installation found'
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/*'"
@@ -389,7 +389,7 @@ function cleanup_old_installation(){
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/templates/*'"
   fi
 }
-function setup_app_configuration() {
+setup_app_configuration() {
     echo 'start to configure application'
     existing_config="$FLD_BIRDSHOME_ROOT"/birdshome.json
     tmp_config="$FLD_BIRDSHOME_ROOT"/birdshome_tmp.json
@@ -404,7 +404,7 @@ function setup_app_configuration() {
     $tmp_config && mv $tmp_config $new_config
     echo "$password_app" | su - "$APP_USER" -c "mv '$new_config' '$existing_config'"
 }
-function application_setup() {
+application_setup() {
     cleanup_old_installation
     create_folder_structure
     copy_application
