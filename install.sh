@@ -387,22 +387,34 @@ cleanup_old_installation(){
     echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
 
     for entry in $FLD_BIRDSHOME_ROOT'/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
     for entry in $FLD_BIRDSHOME'/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
     for entry in $FLD_BIRDSHOME'/handler/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
     for entry in $FLD_BIRDSHOME'/forms/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
     for entry in $FLD_BIRDSHOME'/sensors/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
     for entry in $FLD_BIRDSHOME'/templates/*'; do
-      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      if [[ -f "$entry" ]]; then
+        echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+      fi
     done
   fi
 }
