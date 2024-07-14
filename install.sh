@@ -306,7 +306,6 @@ EOF"
 fi
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm $SMB_CONF_TMP"
 }
 create_startup_service() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
@@ -345,7 +344,7 @@ update_nginx(){
 if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
     echo "Konfigurationsdatei /etc/nginx/sites-enabled/default gefunden!"
 else
-  echo "$password_inst" | su - "$INSTALL_USER" -c "unlink /etc/nginx/sites-enabled/default"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo unlink /etc/nginx/sites-enabled/default"
 fi
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch /etc/nginx/sites-available/reverse-proxy.conf"
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
