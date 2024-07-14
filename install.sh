@@ -399,6 +399,7 @@ cleanup_old_installation(){
     for entry in $FLD_BIRDSHOME_ROOT'/*'; do
       if [ -f "$entry" ]; then
         echo "$password_inst" | su - "$INSTALL_USER" -c "rm $entry"
+        echo "delete $entry"
       fi
     done
     for entry in $FLD_BIRDSHOME'/*'; do
