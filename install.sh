@@ -437,7 +437,7 @@ setup_app_configuration() {
     hostname=$(echo $HOSTNAME)
     echo "copy $existing_config to $new_config"
     echo "$password_inst" | su - "$INSTALL_USER" -c "cp $existing_config $new_config"
-    echo "adapt .system.application_user to $APP_USER in $new_config"
+    #echo "adapt .system.application_user to $APP_USER in $new_config"
     command="jq '.system.application_user = \"$APP_USER\"' $new_config > $tmp_config && mv $tmp_config $new_config"
     #echo $command
     echo "$password_inst" | su - "$INSTALL_USER" -c "$command"
@@ -450,6 +450,7 @@ setup_app_configuration() {
     #echo $command
     echo "$password_inst" | su - "$INSTALL_USER" -c "$command"
     echo "$password_inst" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
+    echo "app configuration adapted"
 }
 application_setup() {
     cleanup_old_installation
