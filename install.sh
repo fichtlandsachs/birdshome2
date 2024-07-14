@@ -381,14 +381,13 @@ system_setup() {
 }
 start_system() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart nmbd.service"
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
 }
 cleanup() {
-  #echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
   echo 'end'
 }
 cleanup_old_installation(){
@@ -435,15 +434,22 @@ setup_app_configuration() {
     existing_config="$FLD_BIRDSHOME_ROOT"/birdshome.json
     tmp_config="$FLD_BIRDSHOME_ROOT"/birdshome_tmp.json
     new_config="$FLD_BIRDSHOME_ROOT"/birdshome_new.json
-    hostname=$(echo "$password_inst" | su - "$INSTALL_USER" -c "cat /proc/sys/kernel/hostname")
+    hostname=$(echo $HOSTNAME)
+    echo "copy $existing_config to $new_config"
     echo "$password_inst" | su - "$INSTALL_USER" -c "cp $existing_config $new_config"
-    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'system.application_user = '$INSTALL_USER'" $new_config > \
-    $tmp_config && mv $tmp_config $new_config
-    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'system.secret_key = '$SECRET_KEY" $new_config > \
-    $tmp_config && mv $tmp_config $new_config
-    echo "$password_inst" | su - "$INSTALL_USER" -c "jq 'video.video_prefix = '$hostname'_'" $new_config > \
-    $tmp_config && mv $tmp_config $new_config
-    #echo "$password_inst" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
+    echo "adapt .system.application_user to $APP_USER in $new_config"
+    command="jq '.system.application_user = \"$APP_USER\"' $new_config > $tmp_config && mv $tmp_config $new_config"
+    #echo $command
+    echo "$password_inst" | su - "$INSTALL_USER" -c "$command"
+    #echo "adapt .system.secret_key to $SECRET_KEY in $new_config"
+    command="jq '.system.secret_key = \"$SECRET_KEY\"' $new_config > $tmp_config && mv $tmp_config $new_config"
+    #echo $command
+    echo "$password_inst" | su - "$INSTALL_USER" -c "$command"
+    #echo "adapt .video.video_prefix to $hostname in $new_config"
+    command="jq '.video.video_prefix = \"$hostname'_'\"' $new_config > $tmp_config && mv $tmp_config $new_config"
+    #echo $command
+    echo "$password_inst" | su - "$INSTALL_USER" -c "$command"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
 }
 application_setup() {
     cleanup_old_installation
