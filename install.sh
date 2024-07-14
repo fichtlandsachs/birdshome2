@@ -381,15 +381,26 @@ cleanup() {
   echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
 }
 cleanup_old_installation(){
-  if [ -d "/etc/birdshome" ]; then
-    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
+  if [ -d "$FLD_BIRDSHOME_ROOT" ]; then
     echo 'existing installation found'
-    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/*'"
+    echo "changed owner of folder '$FLD_BIRDSHOME_ROOT' to '$INSTALL_USER'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME_ROOT'/*'"
-    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/forms/*'"
+    if [ -d "$FLD_BIRDSHOME" ]; then
+      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/*'"
+    fi
+    if [ -d "$FLD_BIRDSHOME'/forms'" ]; then
+      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/forms/*'"
+    fi
+    if [ -d "$FLD_BIRDSHOME'/handlers'" ]; then
     echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/handler/*'"
-    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/sensors/*'"
-    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/templates/*'"
+    fi
+    if [ -d "$FLD_BIRDSHOME'/sensors'" ]; then
+      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/sensors/*'"
+    fi
+    if [ -d "$FLD_BIRDSHOME'/templates" ]; then
+      echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/templates/*'"
+    fi
   fi
 }
 setup_app_configuration() {
