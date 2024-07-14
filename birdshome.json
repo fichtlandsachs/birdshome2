@@ -89,7 +89,7 @@
     "application_user": "pi",
     "application_user_group": "users",
     "secret_key": "8EEz4lmKbvhnZF3j2M1CkxWK97IX1Hh1",
-    "debug": true,
+    "debug": false,
     "testing": false,
     "time_format_file": "%d%m%Y%H%M%S"
   },

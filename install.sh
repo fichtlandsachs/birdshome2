@@ -8,10 +8,10 @@ FLD_BIRDSHOME_MEDIA='/etc/birdshome/application/static/media'
 FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
 SMB_CONF='/etc/samba/smb.conf'
 SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
-secret_key=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
+SECRET_KEY=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 
-
-CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 35 5 \
+function installation_dialog() {
+    CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 35 5 \
   "1" "Set Installation User" ON \
   "2" "Set Application User" ON \
   "3" "Set Samba User" ON \
@@ -115,69 +115,91 @@ fi
 if [ -z "$SMB_USER" ]; then
   whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
 fi
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
-# Install all required packages
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx build-essential \
-libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
-libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev sqlite3  libatlas-base-dev portaudio19-dev python-all-dev \
-software-properties-common ufw  libopenblas-dev"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
-python3-setuptools python3-venv python3-numpy python3-opencv"
-#create the user for teh application
-if id -u "$APP_USER" >/dev/null 2>&1; then
-  echo "user $APP_USER exists"
-else
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo useradd -g users -G pi -m $APP_USER"
-  echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$APP_USER:$password_app' | sudo chpasswd"
-fi
+}
+function basic_setup(){
+  #update the system to the latest patchset
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
+  # Install all required packages
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx sqlite3 build-essential \
+  libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
+  libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev   libatlas-base-dev portaudio19-dev  \
+  software-properties-common ufw  libopenblas-dev jq"
 
-if getent group "$APP_USER" >/dev/null; then
-    echo "Group $APP_USER exists"
-else
-    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo groupadd $APP_USER"
-    echo "Group $APP_USER created"
-fi
+}
+function user_setup(){
+   #create the user for teh application
+  if id -u "$APP_USER" >/dev/null 2>&1; then
+    echo "user $APP_USER exists"
+  else
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo useradd -g users -G pi -m $APP_USER"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$APP_USER:$password_app' | sudo chpasswd"
+  fi
 
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo adduser $APP_USER dialout && sudo adduser $APP_USER users"
-
-if [ ! -d "/etc/birdshome" ]; then
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
-  echo "Folder $FLD_BIRDSHOME_ROOT created!"
-fi
-if [ -f "/etc/systemd/system/birdshome.service" ]; then
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
-fi
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
-
-sleep 2s
+  if getent group "$APP_USER" >/dev/null; then
+      echo "Group $APP_USER exists"
+  else
+      echo "$password_inst" | su - "$INSTALL_USER" -c "sudo groupadd $APP_USER"
+      echo "Group $APP_USER created"
+  fi
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo adduser $APP_USER dialout && sudo adduser $APP_USER users"
 # create samba user
-if id -u $SMB_USER >/dev/null 2>&1; then
-  echo "user $SMB_USER exists"
-else
-  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo useradd -s /bin/false $SMB_USER"
-  echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$APP_USER:$password_app' | sudo chpasswd"
-  echo "user $SMB_USER created"
-fi
+  if id -u $SMB_USER >/dev/null 2>&1; then
+    echo "user $SMB_USER exists"
+  else
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo useradd -s /bin/false $SMB_USER"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$APP_USER:$password_app' | sudo chpasswd"
+    echo "user $SMB_USER created"
+  fi
+echo "$password_inst" | su - "$INSTALL_USER" -c "echo '$SMB_USER:$password_smb' | sudo smbpasswd"
+
+}
+function prepare_system(){
+  if [ -f "/etc/systemd/system/birdshome.service" ]; then
+   echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
+  fi
+}
+function create_folder_structure(){
+  if [ ! -d "/etc/birdshome" ]; then
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
+    echo "Folder $FLD_BIRDSHOME_ROOT created!"
+  fi
+  if [ ! -d "/etc/birdshome/application" ]; then
+    echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME"
+    echo "Folder $FLD_BIRDSHOME created!"
+  fi
+
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
-stty -echo
-echo "Change User context to $APP_USER"
-# switch to user context and create the virtual environment
-echo "$password_app" | su - "$APP_USER" -c "cd ~/"
-echo "$password_app" | su - "$APP_USER" -c "virtualenv ~/birdshome"
-sleep 5s
-echo "$password_app" | su - "$APP_USER" -c "source ~/birdshome/bin/activate"
-# install required packages
-#pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
-echo "$password_app" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
-folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
-echo "$password_app" | su - "$APP_USER" -c "pip3 install -r $folder"
-sleep 10s
-echo "Leaving App User Context"
-
-
-echo "$password_inst" | su - "$INSTALL_USER"
-# Überprüfen, ob die Datei existiert
-if [ ! -f $SMB_CONF ]; then
+echo "$password_inst" | su - "$INSTALL_USER" -c "cp /home/$INSTALL_USER/birdshome2/application \
+ /etc/birdshome/application"
+echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/forms/* \
+ /etc/birdshome/application/forms"
+echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/handler/* \
+ /etc/birdshome/application/handler"
+echo "$password_inst" | su - "$INSTALL_USER" -c "mv /home/$INSTALL_USER/birdshome2/application/templates/* \
+ /etc/birdshome/application/templates"
+}
+function copy_application(){
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv /home/$INSTALL_USER/birdshome2/* /etc/birdshome/"
+}
+function python_setup(){
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
+  python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps python-all-dev"
+  echo "Change User context to $APP_USER"
+  # switch to user context and create the virtual environment
+  echo "$password_app" | su - "$APP_USER" -c "cd ~/"
+  echo "$password_app" | su - "$APP_USER" -c "virtualenv ~/birdshome"
+  sleep 5s
+  echo "$password_app" | su - "$APP_USER" -c "source ~/birdshome/bin/activate"
+  # install required packages
+  #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
+  echo "$password_app" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
+  folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
+  echo "$password_app" | su - "$APP_USER" -c "pip3 install -r $folder"
+  sleep 10s
+  echo "Leaving App User Context"
+}
+function samba_setup(){
+  if [ ! -f $SMB_CONF ]; then
     echo "Configuration $SMB_CONF not found!"
     exit 1
 fi
@@ -270,22 +292,18 @@ if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
    valid users = $SMB_USER, @$SMB_USER
 EOF"
 fi
-
-
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo rm $SMB_CONF_TMP"
-
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
-PID=$!
-wait $PID
+}
+function create_startup_service() {
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
 if [ $? -eq 0 ]; then
     echo "File $FLD_BIRDSHOME_SERV created"
 fi
 if [ -f $FLD_BIRDSHOME_SERV ]; then
     echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
 fi
-
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << EOF
 [Unit]
 Description=birdshome Service
@@ -301,18 +319,22 @@ ExecStart=sh $FLD_BIRDSHOME_ROOT/birds_dev.sh
 [Install]
 WantedBy=multi-user.target
 EOF"
-
 echo 'service birdshome created'
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+
+echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_ROOT/birds_dev.sh << EOF
+#source env/bin/activate
+/bin/bash -c  'source /home/$APP_USER/birdshome/bin/activate'; exec /bin/bash -i
+gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
+EOF"
+echo $password_inst | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh"
+}
+function update_nginx(){
 
 if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
     echo "Konfigurationsdatei /etc/nginx/sites-enabled/default gefunden!"
 else
   echo "$password_inst" | su - "$INSTALL_USER" -c "unlink /etc/nginx/sites-enabled/default"
 fi
-
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo touch /etc/nginx/sites-available/reverse-proxy.conf"
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
 server {
@@ -326,29 +348,73 @@ server {
                     proxy_pass http://127.0.0.1:5000;
   }
 EOF"
-
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_ROOT/birds_dev.sh << EOF
-#source env/bin/activate
-/bin/bash -c  'source /home/$APP_USER/birdshome/bin/activate'; exec /bin/bash -i
-gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
-deactivate
-EOF"
-echo $password_inst | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh"
-
 echo "$password_inst" | su - "$INSTALL_USER" -c "sudo nginx -s reload"
-
-echo "Set up minimum firewall ports"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 80"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw limit https"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw limit samba"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw reload"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
-echo "Firewall setup and enabled"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart nmbd.service"
-echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
-echo "$password_inst" | su - "$INSTALL_USER" -c "cd ~"
-echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+}
+function system_setup() {
+  basic_setup
+  user_setup
+  prepare_system
+  update_nginx
+  samba_setup
+  echo "Set up minimum firewall ports"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 80"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw limit https"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw limit samba"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw reload"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
+  echo "Firewall setup and enabled"
+}
+function start_system() {
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl restart nmbd.service"
+  echo "$password_inst" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome"
+}
+function cleanup() {
+  echo "$password_inst" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+}
+function cleanup_old_installation(){
+  if [ -d "/etc/birdshome" ]; then
+    echo 'existing installation found'
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/*'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME_ROOT'/*'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/forms/*'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/handler/*'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/sensors/*'"
+    echo "$password_inst" | su - "$INSTALL_USER" -c "rm $FLD_BIRDSHOME'/templates/*'"
+  fi
+}
+function setup_app_configuration() {
+    echo 'start to configure application'
+    existing_config="$FLD_BIRDSHOME_ROOT"/birdshome.json
+    tmp_config="$FLD_BIRDSHOME_ROOT"/birdshome_tmp.json
+    new_config="$FLD_BIRDSHOME_ROOT"/birdshome_new.json
+    hostname=$(echo "$password_app" | su - "$APP_USER" -c "cat /proc/sys/kernel/hostname")
+    echo "$password_app" | su - "$APP_USER" -c "cp '$existing_config' '$new_config'"
+    echo "$password_app" | su - "$APP_USER" -c "jq 'system.application_user = '$APP_USER'" $new_config > \
+    $tmp_config && mv $tmp_config $new_config
+    echo "$password_app" | su - "$APP_USER" -c "jq 'system.secret_key = '$SECRET_KEY" $new_config > \
+    $tmp_config && mv $tmp_config $new_config
+    echo "$password_app" | su - "$APP_USER" -c "jq 'video.video_prefix = '$hostname'_'" $new_config > \
+    $tmp_config && mv $tmp_config $new_config
+    echo "$password_app" | su - "$APP_USER" -c "mv '$new_config' '$existing_config'"
+}
+function application_setup() {
+    cleanup_old_installation
+    create_folder_structure
+    copy_application
+    setup_app_configuration
+    create_startup_service
+    cleanup
+}
+#ask for user and required passwords to run the installation und setup user
+installation_dialog
+# setup the system user application etc
+system_setup
+application_setup
+start_system
