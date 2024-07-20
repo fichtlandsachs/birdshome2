@@ -25,10 +25,10 @@ RUN_CLEANUP=false
 
 installation_dialog(){
   CHOICES=$(whiptail --separate-output --menu "Choose options" 10 60 4 \
-            "Installation setup" \
-            "Application setup" \
-            "Samba setup" \
-            "Start Installation"
+            "INST_SETUP" "Installation setup" \
+            "APP_SETUP" "Application setup" \
+            "SMB_SETUP" "Samba setup" \
+            "RUN" "Start Installation"
             3>&1 1>&2 2>&3)
 
 if [ -z "$CHOICES" ]; then
