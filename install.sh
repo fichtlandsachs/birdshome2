@@ -435,8 +435,10 @@ start_system() {
   setup_raspberry
 }
 cleanup() {
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
-  echo 'end'
+  if [ $RUN_CLEANUP ]; then
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+    echo 'end'
+  fi
 }
 cleanup_old_installation(){
   if [ -d "$FLD_BIRDSHOME_ROOT" ]; then
