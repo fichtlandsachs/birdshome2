@@ -24,10 +24,11 @@ SYSTEM_UPDATE=false
 RUN_CLEANUP=false
 
 installation_dialog(){
-  CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 60 4 \
-            "1" "Installation setup" ON \
-            "2" "Application setup" ON \
-            "3" "Samba setup" ON \
+  CHOICES=$(whiptail --separate-output --menu "Choose options" 10 60 4 \
+            "Installation setup" \
+            "Application setup" \
+            "Samba setup" \
+            "Start Installation"
             3>&1 1>&2 2>&3)
 
 if [ -z "$CHOICES" ]; then
