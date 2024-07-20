@@ -24,12 +24,12 @@ SYSTEM_UPDATE=false
 RUN_CLEANUP=false
 
 installation_dialog(){
-  CHOICES=$(whiptail --separate-output --menu "Choose options" 10 60 4 \
+  CHOICES=$(whiptail --title "Choose options"  --menu \
             "INST_SETUP" "Installation setup" \
             "APP_SETUP" "Application setup" \
             "SMB_SETUP" "Samba setup" \
-            "RUN" "Start Installation"
-            3>&1 1>&2 2>&3)
+            "RUN" "Start Installation" \
+             10 60 4 3>&1 1>&2 2>&3)
 
 if [ -z "$CHOICES" ]; then
   echo "No option was selected (user hit Cancel or unselected all options)"
