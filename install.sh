@@ -24,7 +24,7 @@ SYSTEM_UPDATE=false
 RUN_CLEANUP=false
 
 installation_dialog(){
-  CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 60 7 \
+  CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 60 4 \
             "1" "Installation setup" ON \
             "2" "Application setup" ON \
             "3" "Samba setup" ON \
