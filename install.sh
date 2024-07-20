@@ -36,7 +36,7 @@ if [ -z "$CHOICES" ]; then
 else
   for CHOICE in $CHOICES; do
     case "$CHOICE" in
-    "1")
+    "INST_SETUP")
       CHOICES_INST=$(whiptail --separate-output --checklist "Choose options" 10 60 7 \
                     "1" "enable legacy camera setup" ON \
                     "2" "Installation user" ON \
@@ -90,7 +90,7 @@ else
                 done
                 break
                 ;;
-    "2")
+    "APP_SETUP")
     # ask for user ID and will be created later on
       while true; do
         APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" 3>&1 1>&2 2>&3)
@@ -113,7 +113,7 @@ else
         fi
       done
     ;;
-    "3")
+    "SMB_SETUP")
     # ask for user ID and will be created later on
       while true; do
         SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "" 3>&1 1>&2 2>&3)
@@ -138,7 +138,7 @@ else
     ;;
     "4")
       echo "enable legacy camera"
-      
+        LEGACY_ENABLED=true
       ;;
     *)
       echo "Unsupported item $CHOICE!" >&2
