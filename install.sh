@@ -24,7 +24,7 @@ SYSTEM_UPDATE=false
 RUN_CLEANUP=false
 
 installation_dialog(){
-  CHOICES=$(whiptail --title "Choose options"  --menu \
+  CHOICES=$(whiptail --title "Install Setup" --menu "Choose options"   \
             "INST_SETUP" "Installation setup" \
             "APP_SETUP" "Application setup" \
             "SMB_SETUP" "Samba setup" \
