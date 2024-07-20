@@ -37,17 +37,20 @@ else
   for CHOICE in $CHOICES; do
     case "$CHOICE" in
     "INST_SETUP")
-      CHOICES_INST=$(whiptail --separate-output --checklist "Choose options" 10 60 7 \
+      CHOICES_INST=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 7 \
                     "1" "enable legacy camera setup" ON \
                     "2" "Installation user" ON \
                     "3" "Required applications" ON \
                     "4" "delete previous installation including data " ON \
                     3>&1 1>&2 2>&3)
-                for CHOICE_INST in $CHOICES_INST; do
+                for CHOICES_INST in $CHOICES_INST; do
                     case "$CHOICE" in
                         "1")
-                            LEGACY_ENABLED=true
-                            break
+
+                            whiptail --title "Installation user" --msgbox "Legacy camera will be enabled" 10 60
+                            if [ $? -eq 0 ]; then
+                              LEGACY_ENABLED=true
+                            fi
                           ;;
                         "2")
                             # ask for user ID and validate if the user is in Group sudo
@@ -72,12 +75,13 @@ else
                                 if [ $? -eq 0 ] && [ -z "$INST_USER_PWD" ]; then
                                    whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
                                 else
+                                  INSTALL_USER=""
                                   break
                                 fi
                               done
                             ;;
                         "3")
-                            whiptail --title "Applicationsetup" --checklist "The following applications are installed \
+                            whiptail --title "Application setup" --checklist "The following applications are installed \
                             while running the setup process. \n\n " 10 60 20 "${REQUIRED_PACKAGES[@]}"
                           ;;
                         "4")
@@ -215,7 +219,7 @@ create_folder_structure(){
 }
 copy_application(){
   source_folder="/home/$INSTALL_USER/birdshome2"
-  file_arr=($source_folder'/*')
+  file_arr=("$source_folder"'/*')
 
   for entry in ${file_arr[@]}; do
     copy_folder="$entry"
@@ -229,7 +233,7 @@ copy_application(){
   # shellcheck disable=SC2068
   for entry in ${folder_structure[@]}; do
 	copy_folder="$source_folder$entry/*"
-	file_arr=($copy_folder)
+	file_arr=("$copy_folder")
     for file_entry in ${file_arr[@]}; do
       file=$(basename $file_entry)
       target_folder="$FLD_BIRDSHOME/$entry/$file"
