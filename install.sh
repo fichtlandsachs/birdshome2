@@ -36,12 +36,11 @@ else
   for CHOICE in $CHOICES; do
     case "$CHOICE" in
     "1")
-      CHOICES_INST=$(whiptail --separate-output --checklist "Choose options" 10 35 7 \
+      CHOICES_INST=$(whiptail --separate-output --checklist "Choose options" 10 60 7 \
                     "1" "enable legacy camera setup" ON \
                     "2" "Installation user" ON \
                     "3" "Required applications" ON \
-                    "4" "Perform complete system update" ON  \
-                    "5" "delete previous installation including data " ON \
+                    "4" "delete previous installation including data " ON \
                     3>&1 1>&2 2>&3)
                 for CHOICE_INST in $CHOICES_INST; do
                     case "$CHOICE" in
@@ -78,7 +77,7 @@ else
                             ;;
                         "3")
                             whiptail --title "Applicationsetup" --checklist "The following applications are installed \
-                            while running the seutp process. \n\n " 10 60 20 "${REQUIRED_PACKAGES[@]}"
+                            while running the setup process. \n\n " 10 60 20 "${REQUIRED_PACKAGES[@]}"
                           ;;
                         "4")
                           SYSTEM_UPDATE=true
@@ -159,7 +158,9 @@ fi
 }
 basic_setup(){
   #update the system to the latest patchset
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
+  if $SYSTEM_UPDATE; then
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
+  fi
   # Install all required packages
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx sqlite3 build-essential \
   libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
