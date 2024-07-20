@@ -24,7 +24,7 @@ SYSTEM_UPDATE=false
 RUN_CLEANUP=false
 
 installation_dialog(){
-  CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 35 7 \
+  CHOICES=$(whiptail --separate-output --checklist "Choose options" 10 60 7 \
             "1" "Installation setup" ON \
             "2" "Application setup" ON \
             "3" "Samba setup" ON \
@@ -87,6 +87,7 @@ else
                         ;;
                     esac
                 done
+                break
                 ;;
     "2")
     # ask for user ID and will be created later on
