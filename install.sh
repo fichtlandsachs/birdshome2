@@ -7,191 +7,218 @@ SMB_USER=$(jq -r ".system.samba_user" birdshome.json)
 SMB_USER_PWD=''
 LEGACY_ENABLED=true
 
-REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev" \
- "libgstreamer1.0-dev" "gstreamer1.0-plugins-base" "gstreamer1.0-plugins-good" "ffmpeg" \
-  "libilmbase-dev" "libopenexr-dev" "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev" \
+REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev"\
+ "libgstreamer1.0-dev" "gstreamer1.0-plugins-base" "gstreamer1.0-plugins-good" "ffmpeg"\
+  "libilmbase-dev" "libopenexr-dev" "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev"\
   "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev" "jq")
 
 FLD_BIRDSHOME_ROOT=$(jq -r ".system.application_root_folder" birdshome.json)
-FLD_BIRDSHOME=$(jq -r ".system.application_folder" birdshome.json)
-FLD_BIRDSHOME_MEDIA=$(jq -r ".system.application_media_folder" birdshome.json)
+FLD_BIRDSHOME=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_folder" birdshome.json)
+FLD_BIRDSHOME_MEDIA=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_media_folder" birdshome.json)
 FLD_BIRDSHOME_SERV=$(jq -r ".system.application_startup_service" birdshome.json)
 SMB_CONF=$(jq -r ".system.samba_config_file" birdshome.json)
 SMB_CONF_TMP=$SMB_CONF'.tmp'
 SECRET_KEY=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 LEGACY_ENABLED=false
-SYSTEM_UPDATE=false
+SYSTEM_UPDATE=true
 RUN_CLEANUP=false
 
 
 
 installation_dialog(){
-  CHOICES=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
+  CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
             "INST_SETUP" "Installation setup" \
             "APP_SETUP" "Application setup" \
             "SMB_SETUP" "Samba setup" \
-            "RUN" "Start Installation" \
+            "RUN" "Start Installation process" \
               3>&1 1>&2 2>&3)
 STATUS=$?
 if [ $STATUS -eq 1 ]; then
-	whiptail --title "Installation setup" --yesno "Do you want to leave the installation?" 10 60
+	whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60
 	if [ $? -eq 0 ]; then
 		exit
 	fi
 else
-  for CHOICE in $CHOICES; do
     case "$CHOICE" in
     "INST_SETUP")
-	while true; do
-      CHOICES_INST=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 8 \
-                    "1" "enable legacy camera setup" \
-                    "2" "Installation user"\
+	    while true; do
+      CHOICE_INST=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 8 \
+                    "1" "enable legacy camera support" \
+                    "2" "Setup Installation user"\
                     "3" "Required applications"\
-					"4" "update system to the latests version"\
-                    "5" "delete previous installation including data "\
+					"4" "Update system"\
+                    "5" "Delete previous installation including data "\
                     3>&1 1>&2 2>&3)
 				STATUS=$?
-				if [ $STATUS -eq 1 ]; then
-					break
+    if [ $STATUS -eq 1 ]; then
+      break
+    fi
+		case "$CHOICE_INST" in
+			"1")
+				whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60
+				if [ $? -eq 0 ]; then
+				  LEGACY_ENABLED=true
+				else
+				  LEGACY_ENABLED=false
 				fi
-                for CHOICE_INST in $CHOICES_INST; do
-                    case "$CHOICE_INST" in
-                        "1")
-                            whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60
-                            if [ $? -eq 0 ]; then
-                              LEGACY_ENABLED=true
-                            else
-                              LEGACY_ENABLED=false
-                            fi
-                          ;;
-                        "2")
-                            # ask for user ID and validate if the user is in Group sudo
-                              while true; do
-                                INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
-                                 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
-                                  if [ $? -eq 0 ]; then
-                                    if [ -z "$INSTALL_USER" ]; then
-                                      whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
-                                    else
-                                      if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-                                        whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
-                                      else
-                                        break
-                                      fi
-                                    fi
-                                  fi
-                              done
-                            # request the user password for installation reasons
-                              while true; do
-                                INST_USER_PWD=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"$INST_USER_PWD"  \
-                                3>&1 1>&2 2>&3)
-                                if [ $? -eq 0 ] && [ -z "$INST_USER_PWD" ]; then
-                                   whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
-                                else
-                                  INSTALL_USER=""
-                                  break
-                                fi
-                              done
-                            ;;
-                        "3")
-                            whiptail --title "Application setup" --checklist "The following applications are installed \
-                            while running the setup process. \n\n " 10 60 20 "${REQUIRED_PACKAGES[@]}"
-                          ;;
-                        "4")
-                          whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
-                           " 10 60
-                          if [ $? -eq 0 ]; then
-                            SYSTEM_UPDATE=true
+			  ;;
+			"2")
+				# ask for user ID and validate if the user is in Group sudo
+				  while true; do
+					INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
+					 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
+					  if [ $? -eq 0 ]; then
+						if [ -z "$INSTALL_USER" ]; then
+						  whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
+						else
+						  if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+							whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
 						  else
-						    SYSTEM_UPDATE=false
-                          fi
-                        ;;
-                        "5")
-                          whiptail --title "Installation setup" --yesno "The prevoius installation of birdshome will be deleted.\n \
-						  All data are lost.\n " 10 60
-                          if [ $? -eq 0 ]; then
-                            RUN_CLEANUP=true
-						  else
-							RUN_CLEANUP=false
-                          fi
-                        ;;
-						"6")
 							break
-						;;
-                    esac
-                done
+						  fi
+						fi
+					  fi
+				  done
+				# request the user password for installation reasons
+				  while true; do
+					INST_USER_PWD=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"$INST_USER_PWD"  \
+					3>&1 1>&2 2>&3)
+					if [ $? -eq 0 ] && [ -z "$INST_USER_PWD" ]; then
+					   whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
+					else
+					  INSTALL_USER=""
+					  break
+					fi
+				  done
+				;;
+			"3")
+				for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
+					CHECKLIST_ITEMS+=("$PACKAGE" "" "on")
+				done
+				whiptail --title "Application setup" --checklist "The following applications are installed \
+				while running the setup process. \n\n " 30 60 15 "${CHECKLIST_ITEMS[@]}" 3>&1 1>&2 2>&3
+			  ;;
+			"4")
+			  whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
+			   " 10 60
+			  if [ $? -eq 0 ]; then
+				SYSTEM_UPDATE=true
+			  else
+				SYSTEM_UPDATE=false
+			  fi
+			;;
+			"5")
+			  whiptail --title "Installation setup" --yesno "The prevoius installation of birdshome will be deleted.\n \
+			  All data are lost.\n " 10 60
+			  if [ $? -eq 0 ]; then
+				RUN_CLEANUP=true
+			  else
+				RUN_CLEANUP=false
+			  fi
+			;;
+			"6")
+				break
+			;;
+		esac
+		done
+		;;
+    "APP_SETUP")
+      while true; do
+        CHOICE_APP=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 5 \
+                        "1" "setup application user" \
+                        "2" "Setup root folder"\
+                        3>&1 1>&2 2>&3)
+		if [ $STATUS -eq 1 ]; then
+			break
+		fi
+        case $CHOICE_APP in
+        # ask for user ID and will be created later on
+            1)
+            while true; do
+            APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" \
+            3>&1 1>&2 2>&3)
+			# check return value and ask for password
+			if [ $? -eq 0 ]; then
+                if [ -z "$APP_USER" ]; then
+                    whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
+                else
+                   break
+                fi
+            fi
+			done
+		  # request the user password for installation reasons
+			while true; do
+			APP_USER_PWD=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 ""\
+			3>&1 1>&2 2>&3)
+			if [ $? -eq 0 ] && [ -z "$APP_USER_PWD" ]; then
+			   whiptail --title "Application user" --msgbox "Please provide a password" 10 60
+			else
+			  break
+			fi
 			done
 			;;
-    "APP_SETUP")
-    # ask for user ID and will be created later on
-      while true; do
-        APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" 3>&1 1>&2 2>&3)
-        if [ $? -eq 0 ]; then
-          if [ -z "$APP_USER" ]; then
-            whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
-          else
-           break
-          fi
-        fi
-      done
-    # request the user password for installation reasons
-      while true; do
-        APP_USER_PWD=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 ""\
-        3>&1 1>&2 2>&3)
-        if [ $? -eq 0 ] && [ -z "$APP_USER_PWD" ]; then
-           whiptail --title "Application user" --msgbox "Please provide a password" 10 60
-        else
-          break
-        fi
-      done
-    ;;
-    "SMB_SETUP")
-    # ask for user ID and will be created later on
-      while true; do
-        SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "" 3>&1 1>&2 2>&3)
-          if [ $? -eq 0 ]; then
-            if [ -z "$SMB_USER" ]; then
-              whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
-            else
-              break
-            fi
-          fi
-      done
-    # request the user password for installation reasons
-      while true; do
-        SMB_USER_PWD=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 "$SMB_USER_PWD"\
-         3>&1 1>&2 2>&3)
-        if [ $? -eq 0 ] && [ -z "$SMB_USER_PWD" ]; then
-           whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
-        else
-          break
-        fi
-      done
-    ;;
-    "RUN")
-      whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60
-      if [ $? -eq 0 ]; then
-        break
-      fi
+			2)
+			APP_ROOT=$(whiptail --title "Application root" --inputbox "Root path for the application:" 10 60 \
+			"$FLD_BIRDSHOME_ROOT" 3>&1 1>&2 2>&3)
+			  if [ $? -eq 0 ] && [ -z $APP_ROOT ]; then
+				FLD_BIRDSHOME_ROOT=$APP_ROOT
+				FLD_BIRDSHOME=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_folder" birdshome.json)
+				FLD_BIRDSHOME_MEDIA=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_media_folder" birdshome.json)
+			  fi
+            ;;
+          esac
+        done
       ;;
-    *)
-      echo "Unsupported item $CHOICE!" >&2
-      exit 1
-      ;;
-    esac
-  done
+		"SMB_SETUP")
+		# ask for user ID and will be created later on
+		  while true; do
+			SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "" 3>&1 1>&2 2>&3)
+			  if [ $? -eq 0 ]; then
+				if [ -z "$SMB_USER" ]; then
+				  whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
+				else
+				  break
+				fi
+			  fi
+		  done
+		# request the user password for installation reasons
+		  while true; do
+			SMB_USER_PWD=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 "$SMB_USER_PWD"\
+			 3>&1 1>&2 2>&3)
+			if [ $? -eq 0 ] && [ -z "$SMB_USER_PWD" ]; then
+			   whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
+			else
+			  break
+			fi
+		  done
+		;;
+		"RUN")
+		  whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60
+		  if [ $? -eq 0 ]; then
+			  return
+		  fi
+		  ;;
+		*)
+		  echo "Unsupported item $CHOICE!" >&2
+		  exit 1
+		  ;;
+		esac
 fi
-
+}
 if [ -z $INSTALL_USER ]; then
   exit
 fi
 if [ -z "$APP_USER" ]; then
   whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" 0 60 3>&1 1>&2 2>&3
+  APP_USER=$INSTALL_USER
+  APP_USER_PWD=$INST_USER_PWD
 fi
 if [ -z "$SMB_USER" ]; then
   whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
+  SMB_USER=$INSTALL_USER
+  SMB_USER_PWD=$INST_USER_PWD
 fi
-}
+
 basic_setup(){
   #update the system to the latest patchset
   if $SYSTEM_UPDATE; then

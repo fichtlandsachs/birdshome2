@@ -69,8 +69,8 @@
     "interval": 10,
     "replay_interval": 7,
     "prefix": "",
-    "path_snapshots": "//etc/birdshome/application/static/media/screenshots/",
-    "output_path": "//etc/birdshome/application/static/media/replay/"
+    "path_snapshots": "/application/static/media/screenshots/",
+    "output_path": "/application/static/media/replay/"
   },
   "server_upload": {
     "enabled": false,
@@ -93,9 +93,9 @@
     "testing": false,
     "time_format_file": "%d%m%Y%H%M%S",
     "application_root_folder": "/etc/birdshome",
-    "application_folder": "/etc/birdshome/application",
+    "application_folder": "/application",
     "application_startup_service": "/etc/systemd/system/birdshome.service",
-    "application_media_folder": "/etc/birdshome/application/static/media",
+    "application_media_folder": "/application/static/media",
     "samba_config_file": "/etc/samba/smb.conf",
     "samba_user": "birdie_smb"
 
