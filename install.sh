@@ -6,6 +6,7 @@ APP_USER_PWD=''
 SMB_USER=$(jq -r ".system.samba_user" birdshome.json)
 SMB_USER_PWD=''
 LEGACY_ENABLED=true
+install_steps=0
 
 REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev"\
  "libgstreamer1.0-dev" "gstreamer1.0-plugins-base" "gstreamer1.0-plugins-good" "ffmpeg"\
@@ -26,7 +27,7 @@ RUN_CLEANUP=false
 
 
 installation_dialog(){
-  CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
+CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
             "INST_SETUP" "Installation setup" \
             "APP_SETUP" "Application setup" \
             "SMB_SETUP" "Samba setup" \
@@ -223,13 +224,14 @@ basic_setup(){
   #update the system to the latest patchset
   if $SYSTEM_UPDATE; then
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt update && sudo apt -y upgrade"
+    install_steps+=1
   fi
   # Install all required packages
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx sqlite3 build-essential \
   libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
   libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev   libatlas-base-dev portaudio19-dev  \
   software-properties-common ufw  libopenblas-dev jq"
-
+  install_steps+=1
 }
 user_setup(){
    #create the user for teh application
@@ -239,6 +241,7 @@ user_setup(){
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo useradd -g users -G pi -m $APP_USER"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo '$APP_USER:$APP_USER_PWD' | sudo chpasswd"
   fi
+  install_steps+=1
 
   if getent group "$APP_USER" >/dev/null; then
       echo "Group $APP_USER exists"
@@ -246,6 +249,7 @@ user_setup(){
       echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo groupadd $APP_USER"
       echo "Group $APP_USER created"
   fi
+  install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo adduser $APP_USER dialout && sudo adduser $APP_USER users"
 # create samba user
   if id -u $SMB_USER >/dev/null 2>&1; then
@@ -256,23 +260,26 @@ user_setup(){
     echo "user $SMB_USER created"
   fi
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo '$SMB_USER:$SMB_USER_PWD' | sudo smbpasswd"
+install_steps+=1
 
 }
 prepare_system(){
   if [ -f "/etc/systemd/system/birdshome.service" ]; then
    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
   fi
+  install_steps+=1
 }
 create_folder_structure(){
   if [ ! -d "$FLD_BIRDSHOME_ROOT" ]; then
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
     echo "Folder $FLD_BIRDSHOME_ROOT created!"
   fi
+install_steps+=1
   if [ ! -d "$FLD_BIRDSHOME" ]; then
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME"
     echo "Folder $FLD_BIRDSHOME created!"
   fi
-
+install_steps+=1
 }
 copy_application(){
   source_folder="/home/$INSTALL_USER/birdshome2"
@@ -297,21 +304,26 @@ copy_application(){
       echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $file_entry $target_folder"
     done
   done
+  install_steps+=1
 }
 python_setup(){
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
   python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps python-all-dev"
   echo "Change User context to $APP_USER"
+  install_steps+=1
   # switch to user context and create the virtual environment
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "cd ~/"
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "virtualenv ~/birdshome"
   sleep 5s
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "source ~/birdshome/bin/activate"
+  install_steps+=1
   # install required packages
   #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
+  install_steps+=1
   folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 install -r $folder"
+  install_steps+=1
   sleep 10s
   echo "Leaving App User Context"
 }
@@ -323,13 +335,18 @@ fi
 stty echo
 echo 'start to configure samba share'
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo cp $SMB_CONF $SMB_CONF.original"
+install_steps+=1
 echo 'samba.conf saved to smd.conf.original'
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo cp $SMB_CONF $SMB_CONF_TMP"
+install_steps+=1
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/workgroup = .*$/workgroup = workgroup/' $SMB_CONF_TMP"
+install_steps+=1
 echo 'changed workgroup to workgroup'
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/security = .*$/security = user/' $SMB_CONF_TMP"
+install_steps+=1
 echo 'changed security to user'
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/map to guest = .*$/map to guest = never/' $SMB_CONF_TMP"
+install_steps+=1
 echo 'changed map to guest to never'
 
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
@@ -343,28 +360,24 @@ if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"public"
 else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s public = .*$/public = yes' $SMB_CONF_TMP"
 fi
-
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"writable"'/' | grep -q "writable"; then
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a writable = yes' $SMB_CONF_TMP"
 else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s writable = .*$/writable = yes' \
   $SMB_CONF_TMP"
 fi
-
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"comment"'/' | grep -q "comment"; then
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a comment = video share' $SMB_CONF_TMP"
 else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s comment = .*$/comment = video share' \
   $SMB_CONF_TMP"
 fi
-
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"printable"'/' | grep -q "printable"; then
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a printable = no' $SMB_CONF_TMP"
 else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s printable = .*$/printable = no' \
    $SMB_CONF_TMP"
 fi
-
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"guest ok"'/' | grep -q "guest ok"; then
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a guest ok = no' $SMB_CONF_TMP"
 else
@@ -409,17 +422,20 @@ if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
    valid users = $SMB_USER, @$SMB_USER
 EOF"
 fi
+
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mv $SMB_CONF_TMP $SMB_CONF"
 echo "configuration $SMB_CONF updated"
+install_steps+=1
 }
 create_startup_service() {
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
-if [ $? -eq 0 ]; then
-    echo "File $FLD_BIRDSHOME_SERV created"
-fi
-if [ -f $FLD_BIRDSHOME_SERV ]; then
-    echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
-fi
+  if [ $? -eq 0 ]; then
+      echo "File $FLD_BIRDSHOME_SERV created"
+  fi
+  if [ -f $FLD_BIRDSHOME_SERV ]; then
+      echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
+  fi
+  install_steps+=1
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << EOF
 [Unit]
 Description=birdshome Service
@@ -443,6 +459,7 @@ echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_ROOT
 gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
 EOF"
 echo $INST_USER_PWD | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh"
+install_steps+=1
 }
 update_nginx(){
 
@@ -451,6 +468,7 @@ if [ ! -f '/etc/nginx/sites-enabled/default' ]; then
 else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo unlink /etc/nginx/sites-enabled/default"
 fi
+install_steps+=1
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo touch /etc/nginx/sites-available/reverse-proxy.conf"
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a /etc/nginx/sites-available/reverse-proxy.conf << EOF
 server {
@@ -464,7 +482,9 @@ server {
                     proxy_pass http://127.0.0.1:5000;
   }
 EOF"
+install_steps+=1
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo nginx -s reload"
+install_steps+=1
 }
 system_setup() {
   basic_setup
@@ -482,13 +502,19 @@ system_setup() {
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw reload"
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
   echo "Firewall setup and enabled"
+  install_steps+=1
 }
 start_system() {
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
+  install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+  install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
+  install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
+  install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl restart nmbd.service"
+  install_steps+=1
   setup_raspberry
 }
 cleanup() {
@@ -496,6 +522,7 @@ cleanup() {
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
     echo 'end'
   fi
+  install_steps+=1
 }
 cleanup_old_installation(){
   if [ -d "$FLD_BIRDSHOME_ROOT" ]; then
@@ -565,8 +592,8 @@ application_setup() {
     copy_application
     setup_app_configuration
     create_startup_service
-    cleanup
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
+    install_steps+=1
 }
 setup_raspberry(){
   if $LEGACY_ENABLED; then
@@ -585,7 +612,16 @@ setup_raspberry(){
       echo 'failed to configure legacy camera'
       exit
     fi
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
+    install_steps+=1
+  whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60
+	if [ $? -eq 0 ]; then
+	  whiptail --title "Installation setup" --msgbox  "The server will be restarted and is ready to use" 10 60
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
+	else
+	  whiptail --title "Installation setup" --msgbox  "Make sure you restart the engine before running the application." 10 60
+	  exit
+	fi
+    #echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
   fi
 }
 
@@ -616,13 +652,17 @@ while true; do
     if [ $STATUS -eq 0 ]; then
       while true; do
         installation_dialog
+        setup_app_configuration
+        cleanup_old_installation
+        system_setup
+        setup_raspberry
+        cleanup
+        echo $install_steps
+
       done
     else
       exit
     fi
-
-
-
 done
 
 
