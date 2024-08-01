@@ -47,8 +47,9 @@ else
                     "1" "enable legacy camera support" \
                     "2" "Setup Installation user"\
                     "3" "Required applications"\
-					"4" "Update system"\
+					          "4" "Update system"\
                     "5" "Delete previous installation including data "\
+                    "6" "<< Back"\
                     3>&1 1>&2 2>&3)
 				STATUS=$?
     if [ $STATUS -eq 1 ]; then
@@ -210,7 +211,8 @@ if [ -z $INSTALL_USER ]; then
   exit
 fi
 if [ -z "$APP_USER" ]; then
-  whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" 0 60 3>&1 1>&2 2>&3
+  whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" \
+  0 60 3>&1 1>&2 2>&3
   APP_USER=$INSTALL_USER
   APP_USER_PWD=$INST_USER_PWD
 fi
