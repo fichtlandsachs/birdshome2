@@ -86,12 +86,19 @@
     "upload_time": "21:00"
   },
   "system": {
-    "application_user": "pi",
+    "application_user": "birdie",
     "application_user_group": "users",
     "secret_key": "8EEz4lmKbvhnZF3j2M1CkxWK97IX1Hh1",
     "debug": false,
     "testing": false,
-    "time_format_file": "%d%m%Y%H%M%S"
+    "time_format_file": "%d%m%Y%H%M%S",
+    "application_root_folder": "/etc/birdshome",
+    "application_folder": "/etc/birdshome/application",
+    "application_startup_service": "/etc/systemd/system/birdshome.service",
+    "application_media_folder": "/etc/birdshome/application/static/media",
+    "samba_config_file": "/etc/samba/smb.conf",
+    "samba_user": "birdie_smb"
+
   },
   "video": {
     "duration": 15,

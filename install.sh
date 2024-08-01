@@ -1,9 +1,9 @@
 #!/bin/bash
 INSTALL_USER='pi'
 INST_USER_PWD=''
-APP_USER='birdie'
+APP_USER=$(jq -r ".system.application_user" birdshome.json)
 APP_USER_PWD=''
-SMB_USER='birdiesmb'
+SMB_USER=$(jq -r ".system.samba_user" birdshome.json)
 SMB_USER_PWD=''
 LEGACY_ENABLED=true
 
@@ -12,16 +12,18 @@ REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libss
   "libilmbase-dev" "libopenexr-dev" "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev" \
   "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev" "jq")
 
-FLD_BIRDSHOME_ROOT='/etc/birdshome'
-FLD_BIRDSHOME='/etc/birdshome/application'
-FLD_BIRDSHOME_MEDIA='/etc/birdshome/application/static/media'
-FLD_BIRDSHOME_SERV='/etc/systemd/system/birdshome.service'
-SMB_CONF='/etc/samba/smb.conf'
-SMB_CONF_TMP='/etc/samba/smb.conf.tmp'
+FLD_BIRDSHOME_ROOT=$(jq -r ".system.application_root_folder" birdshome.json)
+FLD_BIRDSHOME=$(jq -r ".system.application_folder" birdshome.json)
+FLD_BIRDSHOME_MEDIA=$(jq -r ".system.application_media_folder" birdshome.json)
+FLD_BIRDSHOME_SERV=$(jq -r ".system.application_startup_service" birdshome.json)
+SMB_CONF=$(jq -r ".system.samba_config_file" birdshome.json)
+SMB_CONF_TMP=$SMB_CONF'.tmp'
 SECRET_KEY=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 LEGACY_ENABLED=false
 SYSTEM_UPDATE=false
 RUN_CLEANUP=false
+
+
 
 installation_dialog(){
   CHOICES=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
@@ -30,32 +32,43 @@ installation_dialog(){
             "SMB_SETUP" "Samba setup" \
             "RUN" "Start Installation" \
               3>&1 1>&2 2>&3)
-
-if [ -z "$CHOICES" ]; then
-  echo "No option was selected (user hit Cancel or unselected all options)"
+STATUS=$?
+if [ $STATUS -eq 1 ]; then
+	whiptail --title "Installation setup" --yesno "Do you want to leave the installation?" 10 60
+	if [ $? -eq 0 ]; then
+		exit
+	fi
 else
   for CHOICE in $CHOICES; do
     case "$CHOICE" in
     "INST_SETUP")
-      CHOICES_INST=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 7 \
-                    "1" "enable legacy camera setup" ON \
-                    "2" "Installation user" ON \
-                    "3" "Required applications" ON \
-                    "4" "delete previous installation including data " ON \
+	while true; do
+      CHOICES_INST=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 8 \
+                    "1" "enable legacy camera setup" \
+                    "2" "Installation user"\
+                    "3" "Required applications"\
+					"4" "update system to the latests version"\
+                    "5" "delete previous installation including data "\
                     3>&1 1>&2 2>&3)
-                for CHOICES_INST in $CHOICES_INST; do
-                    case "$CHOICE" in
+				STATUS=$?
+				if [ $STATUS -eq 1 ]; then
+					break
+				fi
+                for CHOICE_INST in $CHOICES_INST; do
+                    case "$CHOICE_INST" in
                         "1")
-
-                            whiptail --title "Installation user" --msgbox "Legacy camera will be enabled" 10 60
+                            whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60
                             if [ $? -eq 0 ]; then
                               LEGACY_ENABLED=true
+                            else
+                              LEGACY_ENABLED=false
                             fi
                           ;;
                         "2")
                             # ask for user ID and validate if the user is in Group sudo
                               while true; do
-                                INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:" 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
+                                INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
+                                 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
                                   if [ $? -eq 0 ]; then
                                     if [ -z "$INSTALL_USER" ]; then
                                       whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
@@ -85,15 +98,30 @@ else
                             while running the setup process. \n\n " 10 60 20 "${REQUIRED_PACKAGES[@]}"
                           ;;
                         "4")
-                          SYSTEM_UPDATE=true
+                          whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
+                           " 10 60
+                          if [ $? -eq 0 ]; then
+                            SYSTEM_UPDATE=true
+						  else
+						    SYSTEM_UPDATE=false
+                          fi
                         ;;
                         "5")
-                          RUN_CLEANUP=true
+                          whiptail --title "Installation setup" --yesno "The prevoius installation of birdshome will be deleted.\n \
+						  All data are lost.\n " 10 60
+                          if [ $? -eq 0 ]; then
+                            RUN_CLEANUP=true
+						  else
+							RUN_CLEANUP=false
+                          fi
                         ;;
+						"6")
+							break
+						;;
                     esac
                 done
-                break
-                ;;
+			done
+			;;
     "APP_SETUP")
     # ask for user ID and will be created later on
       while true; do
@@ -140,9 +168,11 @@ else
         fi
       done
     ;;
-    "4")
-      echo "enable legacy camera"
-        LEGACY_ENABLED=true
+    "RUN")
+      whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60
+      if [ $? -eq 0 ]; then
+        break
+      fi
       ;;
     *)
       echo "Unsupported item $CHOICE!" >&2
@@ -531,6 +561,47 @@ setup_raspberry(){
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
   fi
 }
+
+# first window with description of the installation dialog
+#
+# all steps have to be performed to make sure the the installation run successfully
+# 1. Description
+# 2. Installation user to be used
+# 3. Application User to be setup
+# 4. Information of packages to be installed
+# 5. python packages to be installed based on requirements.txt
+# 6. root folder to copy the files to
+# 7. adapt the birdshome.json
+# 8. create the samba folder and samba user for remote access
+########################################################################################
+
+while true; do
+
+  whiptail --title "Installation Dialog" --yesno "The following dialog guides you through the installation of your birdhome.\
+   The following steps will be performed: \n\n \
+   1. provide the installation user used for running the installation\n (user with sudo privileges required) \n \
+   2. Installation of all packages needed to run birdshome\n \
+   3. Setup of the application user to run the application\n \
+   4. Setup of the python environment based on the requirement.txt in\n	a virtual environment \n \
+   5. creation of the folder structure \n \
+   6. creation of the samba folder for file access including a samba user " 20 78
+  STATUS=$?
+    if [ $STATUS -eq 0 ]; then
+      while true; do
+        installation_dialog
+      done
+    else
+      exit
+    fi
+
+
+
+done
+
+
+
+
+
 #ask for user and required passwords to run the installation und setup user
 installation_dialog
 # setup the system user application etc
