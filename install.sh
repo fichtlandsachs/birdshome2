@@ -395,25 +395,26 @@ python_setup(){
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y python3-full python3-virtualenv python3-dev python3-pip \
   python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps "
   echo "Change User context to $APP_USER"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo -u "$APP_USER" -i << EOF
-# Erstellen und Aktivieren eines virtuellen Umfelds
-venv_dir='/home/$APP_USER/birdie_home/venv'
+  venv_dir="/home/"$APP_USER"/birdie_home/"
+  command="sudo -u '$APP_USER' -i << EOF
 
-# Überprüfen, ob das Verzeichnis bereits existiert
-if [ -d '\$venv_dir' ]; then
-    echo 'Das virtuelle Umfeld existiert bereits.'
-else
-    echo 'Erstelle das virtuelle Umfeld...'
-    python3 -m venv \$venv_dir
-    echo 'Virtuelles Umfeld erstellt in \$venv_dir'
-fi
+  # Überprüfen, ob das Verzeichnis bereits existiert
+  if [ -d $venv_dir ]; then
+      echo 'Das virtuelle Umfeld existiert bereits.'
+  else
+      echo 'Erstelle das virtuelle Umfeld...'
+      python3 -m venv $venv_dir
+      echo 'Virtuelles Umfeld erstellt in \$venv_dir'
+  fi
 
-# Aktivieren des virtuellen Umfelds
-source \$venv_dir/bin/activate
-pip3 uninstall -y numpy
-pip install -r /etc/birds_home/requirements.txt
-echo 'Virtuelles Umfeld aktiviert. Sie befinden sich nun im virtuellen Umfeld.'
-EOF"
+  # Aktivieren des virtuellen Umfelds
+  source $venv_dir/bin/activate
+  pip3 uninstall -y numpy
+  pip install -r /etc/birds_home/requirements.txt
+  echo 'Virtuelles Umfeld aktiviert. Sie befinden sich nun im virtuellen Umfeld.'
+  EOF"
+
+echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
 
   install_steps+=1
   # switch to user context and create the virtual environment
