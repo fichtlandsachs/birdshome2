@@ -5,41 +5,17 @@
     "user": ""
   },
   "folder_structure": {
-    "output_folder": [
-      "static"
-    ],
-    "media_folder": [
-      "media"
-    ],
-    "database_folder": [
-      "database"
-    ],
-    "replay_folder": [
-      "media",
-      "replay"
-    ],
-    "picture_folder": [
-      "media",
-      "pictures"
-    ],
-    "video_folder": [
-      "media",
-      "videos"
-    ],
-    "screenshot_folder": [
-      "media",
-      "screenshots"
-    ],
-    "vid_analyser_folder": [
-      "media",
-      "nodetct"
-    ],
-    "picture_personas": [
-      "general"
-    ],
-    "log_file_folder": [
+    "output_folder": "static",
+    "database_folder":
+      "database",
+    "replay_folder": "static/media/replay",
+    "picture_folder": "static/media/pictures",
+    "video_folder": "static/media/videos",
+    "screenshot_folder": "static/media/screenshots",
+    "vid_analyser_folder": "static/media/videos/nodetct",
+    "picture_personas": "static/media/general",
+    "log_file_folder":
       "log"
-    ]
   },
   "general": {
     "name": "birds_home"
