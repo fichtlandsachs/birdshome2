@@ -1,12 +1,10 @@
 #!/bin/bash
-set -x
-
 INSTALL_USER='pi'
-INST_USER_PWD='tachpost'
-APP_USER="birdie28"
-APP_USER_PWD='tachpost'
-SMB_USER="birdie28_smb"
-SMB_USER_PWD='tachpost'
+INST_USER_PWD=''
+APP_USER=$(jq -r ".system.application_user" birds_home.json)
+APP_USER_PWD=''
+SMB_USER=$(jq -r ".system.samba_user" birds_home.json)
+SMB_USER_PWD=''
 LEGACY_ENABLED=true
 START_INSTALL=false
 install_steps=0
