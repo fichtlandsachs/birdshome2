@@ -17,8 +17,8 @@ REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libss
   "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev")
 
 FLD_BIRDS_HOME_ROOT=$(jq -r ".system.application_root_folder" birds_home.json)
-FLD_BIRDS_HOME="$FLD_BIRDS_HOME_ROOT"+"$(jq -r '.system.application_folder' birds_home.json)"
-FLD_BIRDS_HOME_MEDIA="$FLD_BIRDS_HOME_ROOT"+"$(jq -r '.system.application_media_folder' birds_home.json)"
+FLD_BIRDS_HOME="$FLD_BIRDS_HOME_ROOT""$(jq -r '.system.application_folder' birds_home.json)"
+FLD_BIRDS_HOME_MEDIA="$FLD_BIRDS_HOME_ROOT""$(jq -r '.system.application_media_folder' birds_home.json)"
 FLD_BIRDS_HOME_SERV=$(jq -r ".system.application_startup_service" birds_home.json)
 SMB_CONF=$(jq -r ".system.samba_config_file" birds_home.json)
 SMB_CONF_TMP=$SMB_CONF'.tmp'
@@ -312,6 +312,69 @@ install_steps+=1
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDS_HOME"
     echo "Folder $FLD_BIRDS_HOME created!"
   fi
+  folder_structure=$(jq -r ".folder_structure" birds_home.json)
+echo
+	path=$(jq -r ".folder_structure.output_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.database_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.media_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.replay_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.picture_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.video_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.screenshot_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.vid_analyser_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.picture_personas" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+	path=$(jq -r ".folder_structure.log_file_folder" birds_home.json)
+	target_folder="$FLD_BIRDS_HOME/$path"
+	if [ ! -d target_folder ]; then
+		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $target_folder"
+		echo "Folder $target_folder created!"
+	fi
+
 install_steps+=1
 }
 copy_application(){
@@ -319,22 +382,30 @@ copy_application(){
   file_arr=("$source_folder"'/*')
 
   for entry in "${file_arr[@]}"; do
+  if [ -f "$entry" ]; then
     copy_folder="$entry"
     file=$(basename "$entry")
     target_folder="$FLD_BIRDS_HOME_ROOT/$file"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $copy_folder $target_folder"
+  elif [ -d "$entry" ]; then
+    target_folder="$FLD_BIRDS_HOME_ROOT/$file"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mkdir $target_folder"
+  fi
   done
   source_folder="/home/$INSTALL_USER/birdshome2/application"
-  folder_structure+=("/forms" "/handler" "/templates")
+
 
   # shellcheck disable=SC2068
   for entry in ${folder_structure[@]}; do
 	copy_folder="$source_folder$entry/*"
+
 	file_arr=("$copy_folder")
     for file_entry in ${file_arr[@]}; do
+	if [ -f "$file_entry" ]; then
       file=$(basename "$file_entry")
-      target_folder="$FLD_BIRDS_HOME/$entry/$file"
+      target_folder="$FLD_BIRDS_HOME$entry/$file"
       echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $file_entry $target_folder"
+	fi
     done
   done
   install_steps+=1
@@ -562,38 +633,7 @@ cleanup_old_installation(){
     echo 'existing installation found'
     echo "changed owner of folder '$FLD_BIRDS_HOME_ROOT' to '$INSTALL_USER'"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDS_HOME_ROOT"
-
-    for entry in $FLD_BIRDS_HOME_ROOT'/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-        echo "delete $entry"
-      fi
-    done
-    for entry in $FLD_BIRDS_HOME'/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-      fi
-    done
-    for entry in $FLD_BIRDS_HOME'/handler/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-      fi
-    done
-    for entry in $FLD_BIRDS_HOME'/forms/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-      fi
-    done
-    for entry in $FLD_BIRDS_HOME'/sensors/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-      fi
-    done
-    for entry in $FLD_BIRDS_HOME'/templates/*'; do
-      if [ -f "$entry" ]; then
-        echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
-      fi
-    done
+	echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo rm -R $FLD_BIRDS_HOME_ROOT"
   fi
 }
 setup_app_configuration() {
