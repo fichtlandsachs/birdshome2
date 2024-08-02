@@ -504,11 +504,8 @@ install_steps+=1
 }
 create_startup_service() {
   result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDS_HOME_SERV")
-  if [ "$result" -eq 0 ]; then
+  if [ -f $FLD_BIRDS_HOME_SERV ]; then
       echo "File $FLD_BIRDS_HOME_SERV created"
-  fi
-  if [ -f "$FLD_BIRDS_HOME_SERV" ]; then
-      echo "Konfigurationsdatei $FLD_BIRDS_HOME_SERV angelegt!"
   fi
   install_steps+=1
 echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDS_HOME_SERV << EOF
