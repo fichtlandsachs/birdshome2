@@ -678,7 +678,7 @@ while true; do
     if [ $STATUS -eq 0 ]; then
       while true; do
         result=$(installation_dialog)
-		if [ result -eq 0 ]; then
+		if [ "$result" -eq 0 ]; then
 			break
 		fi
       done
