@@ -261,6 +261,7 @@ basic_setup(){
 	command="${command% }"
 
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt autoremove -y"
   install_steps+=1
 }
 user_setup(){
@@ -627,23 +628,14 @@ application_setup() {
 }
 setup_raspberry(){
   if $LEGACY_ENABLED; then
-    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo raspi-config nonint do_camera 1")
-    if [ "$result" -eq 0 ]; then
-      echo 'failed to configure legacy camera'
-      exit
-    fi
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo raspi-config nonint do_camera 1"
 	if ! grep -q "start_x=1" /boot/config.txt; then
 		result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo 'start_x=1' | sudo tee -a /boot/config.txt")
 	fi
 	if ! grep -q "gpu_mem=.*" /boot/config.txt; then
 		result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo 'gpu_mem=128' | sudo tee -a /boot/config.txt")
 	fi
-    if [ "$result" -eq 0 ]; then
-      echo 'failed to configure legacy camera'
-      exit
-    fi
     install_steps+=1
-  result=$()
 	if whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60; then
 	  whiptail --title "Installation setup" --msgbox  "The server will be restarted and is ready to use" 10 60
 		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
@@ -678,9 +670,8 @@ while true; do
    4. Setup of the python environment based on the requirement.txt in\n	a virtual environment \n \
    5. creation of the folder structure \n \
    6. creation of the samba folder for file access including a samba user " 20 78; then
-      while true; do
+    while true; do
         installation_dialog
-		echo "$START_INSTALL"
 		if $START_INSTALL; then
 			break
 		fi

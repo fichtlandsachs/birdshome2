@@ -9,9 +9,10 @@ including pyaudio soud sequences
 
 The installation can be done using the install.sh file on your device
 
-sudo apt-get install git
+sudo apt-get install git jq
 
 git clone https://github.com/fichtlandsachs/birdshome2.git
 cd birdshome2
-sh install.sh
+sudo chmod +x install.sh
+./install.sh
 
