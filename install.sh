@@ -2,11 +2,11 @@
 set -x
 
 INSTALL_USER='pi'
-INST_USER_PWD=''
-APP_USER=$(jq -r ".system.application_user" birds_home.json)
-APP_USER_PWD=''
-SMB_USER=$(jq -r ".system.samba_user" birds_home.json)
-SMB_USER_PWD=''
+INST_USER_PWD='tachpost'
+APP_USER="birdie28"
+APP_USER_PWD='tachpost'
+SMB_USER="birdie28_smb"
+SMB_USER_PWD='tachpost'
 LEGACY_ENABLED=true
 START_INSTALL=false
 install_steps=0
@@ -379,35 +379,8 @@ install_steps+=1
 }
 copy_application(){
   source_folder="/home/$INSTALL_USER/birdshome2"
-  file_arr=("$source_folder"'/*')
-
-  for entry in "${file_arr[@]}"; do
-  if [ -f "$entry" ]; then
-    copy_folder="$entry"
-    file=$(basename "$entry")
-    target_folder="$FLD_BIRDS_HOME_ROOT/$file"
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $copy_folder $target_folder"
-  elif [ -d "$entry" ]; then
-    target_folder="$FLD_BIRDS_HOME_ROOT/$file"
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mkdir $target_folder"
-  fi
-  done
-  source_folder="/home/$INSTALL_USER/birdshome2/application"
-
-
-  # shellcheck disable=SC2068
-  for entry in ${folder_structure[@]}; do
-	copy_folder="$source_folder$entry/*"
-
-	file_arr=("$copy_folder")
-    for file_entry in ${file_arr[@]}; do
-	if [ -f "$file_entry" ]; then
-      file=$(basename "$file_entry")
-      target_folder="$FLD_BIRDS_HOME$entry/$file"
-      echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $file_entry $target_folder"
-	fi
-    done
-  done
+  target_folder="$FLD_BIRDS_HOME_ROOT"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo 	cp -rv '$source_folder'/* '$target_folder'"
   install_steps+=1
 }
 python_setup(){
@@ -623,7 +596,7 @@ start_system() {
 }
 cleanup() {
   if [ $RUN_CLEANUP ]; then
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birds_home2"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
     echo 'end'
   fi
   install_steps+=1
@@ -642,10 +615,10 @@ setup_app_configuration() {
     tmp_config="$FLD_BIRDS_HOME_ROOT"/birds_home_tmp.json
     new_config="$FLD_BIRDS_HOME_ROOT"/birds_home_new.json
     hostname=$HOSTNAME
-
+	echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDS_HOME_ROOT"
     result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $existing_config $new_config")
 
-    command="jq '.system.application_user = \"$APP_USER\"' $new_config > $tmp_config && cp $tmp_config $new_config"
+    command="jq '.system.application_user = \"$INSTALL_USER\"' $new_config > $tmp_config && cp $tmp_config $new_config"
 
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
 
@@ -658,9 +631,9 @@ setup_app_configuration() {
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
 
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $new_config"
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mv $tmp_config"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $tmp_config"
     echo "/napp configuration adapted"
+
 }
 application_setup() {
     cleanup_old_installation
