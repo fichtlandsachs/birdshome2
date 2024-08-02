@@ -1,7 +1,7 @@
 {
   "database": {
     "password": "",
-    "uri": "sqlite:////etc/birdshome/application/database/birdshome.db",
+    "uri": "sqlite:////etc/birds_home/application/database/birds_home.db",
     "user": ""
   },
   "folder_structure": {
@@ -42,7 +42,7 @@
     ]
   },
   "general": {
-    "name": "birdshome"
+    "name": "birds_home"
   },
   "latest_data": {
     "date_egg": "",
@@ -86,19 +86,18 @@
     "upload_time": "21:00"
   },
   "system": {
-    "application_user": "birdie",
+    "application_user": "",
     "application_user_group": "users",
     "secret_key": "8EEz4lmKbvhnZF3j2M1CkxWK97IX1Hh1",
     "debug": false,
     "testing": false,
     "time_format_file": "%d%m%Y%H%M%S",
-    "application_root_folder": "/etc/birdshome",
+    "application_root_folder": "/etc/birds_home",
     "application_folder": "/application",
-    "application_startup_service": "/etc/systemd/system/birdshome.service",
+    "application_startup_service": "/etc/systemd/system/birds_home.service",
     "application_media_folder": "/application/static/media",
     "samba_config_file": "/etc/samba/smb.conf",
-    "samba_user": "birdie_smb"
-
+    "samba_user": ""
   },
   "video": {
     "duration": 15,

@@ -1,11 +1,11 @@
 import datetime
+import imutils as imutils
 import io
+import numpy as np
 import os
 import pathlib
 import sqlite3
 import threading
-import imutils as imutils
-import numpy as np
 
 from application.forms.admin_form import AdminForm
 from application.handler.database_hndl import DBHandler

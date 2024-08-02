@@ -1,23 +1,24 @@
 #!/bin/bash
 INSTALL_USER='pi'
 INST_USER_PWD=''
-APP_USER=$(jq -r ".system.application_user" birdshome.json)
+APP_USER=$(jq -r ".system.application_user" birds_home.json)
 APP_USER_PWD=''
-SMB_USER=$(jq -r ".system.samba_user" birdshome.json)
+SMB_USER=$(jq -r ".system.samba_user" birds_home.json)
 SMB_USER_PWD=''
 LEGACY_ENABLED=true
+START_INSTALL=true
 install_steps=0
 
 REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev"\
  "libgstreamer1.0-dev" "gstreamer1.0-plugins-base" "gstreamer1.0-plugins-good" "ffmpeg"\
   "libilmbase-dev" "libopenexr-dev" "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev"\
-  "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev" "jq")
+  "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev")
 
-FLD_BIRDSHOME_ROOT=$(jq -r ".system.application_root_folder" birdshome.json)
-FLD_BIRDSHOME=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_folder" birdshome.json)
-FLD_BIRDSHOME_MEDIA=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_media_folder" birdshome.json)
-FLD_BIRDSHOME_SERV=$(jq -r ".system.application_startup_service" birdshome.json)
-SMB_CONF=$(jq -r ".system.samba_config_file" birdshome.json)
+FLD_BIRDS_HOME_ROOT=$(jq -r ".system.application_root_folder" birds_home.json)
+FLD_BIRDS_HOME=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_folder" birds_home.json)
+FLD_BIRDS_HOME_MEDIA=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_media_folder" birds_home.json)
+FLD_BIRDS_HOME_SERV=$(jq -r ".system.application_startup_service" birds_home.json)
+SMB_CONF=$(jq -r ".system.samba_config_file" birds_home.json)
 SMB_CONF_TMP=$SMB_CONF'.tmp'
 SECRET_KEY=$(tr -dc 'a-zA-Z0-9!§$%&/<>' < /dev/random | head -c 32)
 LEGACY_ENABLED=false
@@ -25,7 +26,44 @@ SYSTEM_UPDATE=true
 RUN_CLEANUP=false
 
 
-
+validate_installation_dialog(){
+    if [ -z "$INSTALL_USER" ]; then
+      whiptail --title "Installation Setup" --msgbox "Install user is missing!" 0 60
+	    START_INSTALL=false
+    fi
+    if [ -z "$INST_USER_PWD" ]; then
+      whiptail --title "Installation Setup" --msgbox "Install user password is missing!" 0 60
+	    START_INSTALL=false
+    fi
+    if [ -z "$APP_USER" ]; then
+      whiptail --title "Application Setup" --yesno  "Will use the $INSTALL_USER as application user as well!" 0 60
+      STATUS=$?
+      if [ $STATUS -eq 0 ]; then
+          APP_USER=$INSTALL_USER
+          APP_USER_PWD=$INST_USER_PWD
+	  else
+		  START_INSTALL=false
+      fi
+    fi
+    if [ -z "$APP_USER_PWD" ]; then
+      whiptail --title "Application Setup" --yesno  "App user password is missing" 0 60
+	    START_INSTALL=false
+    fi
+    if [ -z "$SMB_USER" ]; then
+      whiptail --title "Samba Setup" --yesno  "Will use the $INSTALL_USER as samba user as well!" 0 60
+      STATUS=$?
+      if [ $STATUS -eq 0 ]; then
+          SMB_USER=$INSTALL_USER
+          SMB_USER_PWD=$INST_USER_PWD
+	  else
+		  START_INSTALL=false
+      fi
+    fi
+    if [ -z "$SMB_USER_PWD" ]; then
+      whiptail --title "Samba Setup" --msgbox "Samba user password is missing" 0 60
+	    START_INSTALL=false
+    fi
+}
 installation_dialog(){
 CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
             "INST_SETUP" "Installation setup" \
@@ -35,8 +73,8 @@ CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
               3>&1 1>&2 2>&3)
 STATUS=$?
 if [ $STATUS -eq 1 ]; then
-	whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60
-	if [ $? -eq 0 ]; then
+	result=$(whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60)
+	if [ "$result" -eq 0 ]; then
 		exit
 	fi
 else
@@ -57,8 +95,8 @@ else
     fi
 		case "$CHOICE_INST" in
 			"1")
-				whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60
-				if [ $? -eq 0 ]; then
+				result=$(whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60)
+				if [ "$result" -eq 0 ]; then
 				  LEGACY_ENABLED=true
 				else
 				  LEGACY_ENABLED=false
@@ -69,23 +107,21 @@ else
 				  while true; do
 					INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
 					 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
-					  if [ $? -eq 0 ]; then
-              if [ -z "$INSTALL_USER" ]; then
-                whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
-              else
-                if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-                whiptail --title "Installation user" --msgbox "User is not in list of sudoer" 10 60
-                else
-                break
-                fi
-              fi
-					  fi
+          if [ -z "$INSTALL_USER" ]; then
+            whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
+          else
+            if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+            whiptail --title "Installation user" --msgbox "User is not in list of sudoer" 10 60
+            else
+            break
+            fi
+          fi
 				  done
 				# request the user password for installation reasons
 				  while true; do
 					INST_USER_PWD=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"$INST_USER_PWD"  \
 					3>&1 1>&2 2>&3)
-					if [ $? -eq 0 ] && [ -z "$INST_USER_PWD" ]; then
+					if [ -z "$INST_USER_PWD" ]; then
 					   whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
 					else
 					  INSTALL_USER=""
@@ -101,18 +137,18 @@ else
 				while running the setup process. \n\n " 30 60 15 "${CHECKLIST_ITEMS[@]}" 3>&1 1>&2 2>&3
 			  ;;
 			"4")
-			  whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
-			   " 10 60
-			  if [ $? -eq 0 ]; then
+			  result=$(whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
+			   " 10 60)
+			  if [ "$result" -eq 0 ]; then
 				SYSTEM_UPDATE=true
 			  else
 				SYSTEM_UPDATE=false
 			  fi
 			;;
 			"5")
-			  whiptail --title "Installation setup" --yesno "The prevoius installation of birdshome will be deleted.\n \
-			  All data are lost.\n " 10 60
-			  if [ $? -eq 0 ]; then
+			  result=$(whiptail --title "Installation setup" --yesno "The prevoius installation of birds_home will be deleted.\n \
+			  All data are lost.\n " 10 60)
+			  if [ "$result" -eq 0 ]; then
 				RUN_CLEANUP=true
 			  else
 				RUN_CLEANUP=false
@@ -129,65 +165,63 @@ else
         CHOICE_APP=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 5 \
                         "1" "setup application user" \
                         "2" "Setup root folder"\
+                        "3" "<< Back"\
                         3>&1 1>&2 2>&3)
-		if [ $STATUS -eq 1 ]; then
-			break
-		fi
+        if [ $STATUS -eq 1 ]; then
+          break
+        fi
         case $CHOICE_APP in
         # ask for user ID and will be created later on
-            1)
-            while true; do
-            APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" \
-            3>&1 1>&2 2>&3)
-			# check return value and ask for password
-			if [ $? -eq 0 ]; then
-                if [ -z "$APP_USER" ]; then
-                    whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
-                else
-                   break
-                fi
+        1)
+        while true; do
+          APP_USER=$(whiptail --title "Application user" --inputbox "Application User ID:" 10 60 "$APP_USER" \
+          3>&1 1>&2 2>&3)
+      # check return value and ask for password
+          if [ -z "$APP_USER" ]; then
+              whiptail --title "Application user" --msgbox "Please provide a valid user" 10 60
+          else
+             APP_USER_PWD=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 ""\
+              3>&1 1>&2 2>&3)
+            if [ -z "$APP_USER_PWD" ]; then
+            # request the user password for setup reasons
+              whiptail --title "Application user" --msgbox "Please provide a password" 10 60
+            else
+              break
             fi
-			done
-		  # request the user password for installation reasons
-			while true; do
-			APP_USER_PWD=$(whiptail --title "Application user" --passwordbox "Application user password:" 10 60 ""\
-			3>&1 1>&2 2>&3)
-			if [ $? -eq 0 ] && [ -z "$APP_USER_PWD" ]; then
-			   whiptail --title "Application user" --msgbox "Please provide a password" 10 60
-			else
-			  break
-			fi
-			done
-			;;
-			2)
-			APP_ROOT=$(whiptail --title "Application root" --inputbox "Root path for the application:" 10 60 \
-			"$FLD_BIRDSHOME_ROOT" 3>&1 1>&2 2>&3)
-			  if [ $? -eq 0 ] && [ -z $APP_ROOT ]; then
-				FLD_BIRDSHOME_ROOT=$APP_ROOT
-				FLD_BIRDSHOME=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_folder" birdshome.json)
-				FLD_BIRDSHOME_MEDIA=$FLD_BIRDSHOME_ROOT+$(jq -r ".system.application_media_folder" birdshome.json)
-			  fi
+          fi
+          done
+        ;;
+			  2)
+			    APP_ROOT=$(whiptail --title "Application root" --inputbox "Root path for the application:" 10 60 \
+			              "$FLD_BIRDS_HOME_ROOT" 3>&1 1>&2 2>&3)
+            if [ -z "$APP_ROOT" ]; then
+              FLD_BIRDS_HOME_ROOT=$APP_ROOT
+              FLD_BIRDS_HOME=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_folder" birds_home.json)
+              FLD_BIRDS_HOME_MEDIA=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_media_folder" birds_home.json)
+            fi
             ;;
+          3)
+          return
+			;;
           esac
-        done
-      ;;
+
+		done
+		;;
 		"SMB_SETUP")
 		# ask for user ID and will be created later on
 		  while true; do
 			SMB_USER=$(whiptail --title "Samba user" --inputbox "Samba User ID:" 10 60 "" 3>&1 1>&2 2>&3)
-			  if [ $? -eq 0 ]; then
 				if [ -z "$SMB_USER" ]; then
 				  whiptail --title "Samba user" --msgbox "Please provide a valid user" 10 60
 				else
 				  break
-				fi
 			  fi
 		  done
 		# request the user password for installation reasons
 		  while true; do
 			SMB_USER_PWD=$(whiptail --title "Samba user" --passwordbox "Samba user password:" 10 60 "$SMB_USER_PWD"\
 			 3>&1 1>&2 2>&3)
-			if [ $? -eq 0 ] && [ -z "$SMB_USER_PWD" ]; then
+			if [ -z "$SMB_USER_PWD" ]; then
 			   whiptail --title "Samba user" --msgbox "Please provide a password" 10 60
 			else
 			  break
@@ -195,10 +229,13 @@ else
 		  done
 		;;
 		"RUN")
-		  whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60
-		  if [ $? -eq 0 ]; then
-			  return
-		  fi
+		  start_inst=$(whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60)
+        if [ "$start_inst" -eq 0 ]; then
+		      validate_installation_dialog
+          if [ $START_INSTALL ]; then
+            return
+          fi
+        fi
 		  ;;
 		*)
 		  echo "Unsupported item $CHOICE!" >&2
@@ -207,54 +244,7 @@ else
 		esac
 fi
 }
-validate_installation_dialog(){
-    if [ -z "$INSTALL_USER" ]; then
-      whiptail --title "Installation Setup" -msgbox "Install user is missing!" \
-      0 60 3>&1 1>&2 2>&3
-    fi
-    if [ -z "$INST_USER_PWD" ]; then
-      whiptail --title "Installation Setup" -msgbox "Install user password is missing!" \
-      0 60 3>&1 1>&2 2>&3
-    fi
-    if [ -z "$APP_USER" ]; then
-      whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" \
-      0 60 3>&1 1>&2 2>&3
-      STATUS=$?
-      if [ $STATUS -eq 0 ]; then
-          APP_USER=$INSTALL_USER
-          APP_USER_PWD=$INST_USER_PWD
-      fi
-    fi
-    if [ -z "$APP_USER_PWD" ]; then
-      whiptail --title "Application Setup" -msgbox "App user password is missing" \
-      0 60 3>&1 1>&2 2>&3
-    fi
-    if [ -z "$SMB_USER" ]; then
-      whiptail --title "Samba Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" \
-      0 60 3>&1 1>&2 2>&3
-      STATUS=$?
-      if [ $STATUS -eq 0 ]; then
-          SMB_USER=$INSTALL_USER
-          SMB_USER_PWD=$INST_USER_PWD
-      fi
-    fi
-    if [ -z "$SMB_USER_PWD" ]; then
-      whiptail --title "Samba Setup" -msgbox "Samba user password is missing" \
-      0 60 3>&1 1>&2 2>&3
-    fi
-}
 
-if [ -z "$APP_USER" ]; then
-  whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" \
-  0 60 3>&1 1>&2 2>&3
-  APP_USER=$INSTALL_USER
-  APP_USER_PWD=$INST_USER_PWD
-fi
-if [ -z "$SMB_USER" ]; then
-  whiptail --title "Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" 0 60 3>&1 1>&2 2>&3
-  SMB_USER=$INSTALL_USER
-  SMB_USER_PWD=$INST_USER_PWD
-fi
 
 basic_setup(){
   #update the system to the latest patchset
@@ -288,7 +278,7 @@ user_setup(){
   install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo adduser $APP_USER dialout && sudo adduser $APP_USER users"
 # create samba user
-  if id -u $SMB_USER >/dev/null 2>&1; then
+  if id -u "$SMB_USER" >/dev/null 2>&1; then
     echo "user $SMB_USER exists"
   else
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo useradd -s /bin/false $SMB_USER"
@@ -300,20 +290,20 @@ install_steps+=1
 
 }
 prepare_system(){
-  if [ -f "/etc/systemd/system/birdshome.service" ]; then
-   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birdshome.service"
+  if [ -f "/etc/systemd/system/birds_home.service" ]; then
+   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birds_home.service"
   fi
   install_steps+=1
 }
 create_folder_structure(){
-  if [ ! -d "$FLD_BIRDSHOME_ROOT" ]; then
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME_ROOT"
-    echo "Folder $FLD_BIRDSHOME_ROOT created!"
+  if [ ! -d "$FLD_BIRDS_HOME_ROOT" ]; then
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDS_HOME_ROOT"
+    echo "Folder $FLD_BIRDS_HOME_ROOT created!"
   fi
 install_steps+=1
-  if [ ! -d "$FLD_BIRDSHOME" ]; then
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDSHOME"
-    echo "Folder $FLD_BIRDSHOME created!"
+  if [ ! -d "$FLD_BIRDS_HOME" ]; then
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo mkdir $FLD_BIRDS_HOME"
+    echo "Folder $FLD_BIRDS_HOME created!"
   fi
 install_steps+=1
 }
@@ -323,8 +313,8 @@ copy_application(){
 
   for entry in ${file_arr[@]}; do
     copy_folder="$entry"
-    file=$(basename $entry)
-    target_folder="$FLD_BIRDSHOME_ROOT/$file"
+    file=$(basename "$entry")
+    target_folder="$FLD_BIRDS_HOME_ROOT/$file"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $copy_folder $target_folder"
   done
   source_folder="/home/$INSTALL_USER/birdshome2/application"
@@ -335,8 +325,8 @@ copy_application(){
 	copy_folder="$source_folder$entry/*"
 	file_arr=("$copy_folder")
     for file_entry in ${file_arr[@]}; do
-      file=$(basename $file_entry)
-      target_folder="$FLD_BIRDSHOME/$entry/$file"
+      file=$(basename "$file_entry")
+      target_folder="$FLD_BIRDS_HOME/$entry/$file"
       echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $file_entry $target_folder"
     done
   done
@@ -349,22 +339,22 @@ python_setup(){
   install_steps+=1
   # switch to user context and create the virtual environment
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "cd ~/"
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "virtualenv ~/birdshome"
+  echo "$APP_USER_PWD" | su - "$APP_USER" -c "virtualenv ~/birds_home"
   sleep 5s
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "source ~/birdshome/bin/activate"
+  echo "$APP_USER_PWD" | su - "$APP_USER" -c "source ~/birds_home/bin/activate"
   install_steps+=1
   # install required packages
   #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
   install_steps+=1
-  folder=$FLD_BIRDSHOME_ROOT'/requirements.txt'
+  folder=$FLD_BIRDS_HOME_ROOT'/requirements.txt'
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 install -r $folder"
   install_steps+=1
   sleep 10s
   echo "Leaving App User Context"
 }
 samba_setup(){
-  if [ ! -f $SMB_CONF ]; then
+  if [ ! -f "$SMB_CONF" ]; then
     echo "Configuration $SMB_CONF not found!"
     exit 1
 fi
@@ -386,9 +376,9 @@ install_steps+=1
 echo 'changed map to guest to never'
 
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"path"'/' | grep -q "path"; then
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDSHOME_MEDIA $SMB_CONF_TMP"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/a path='$FLD_BIRDS_HOME_MEDIA $SMB_CONF_TMP"
 else
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s path= .*$/path ='$FLD_BIRDSHOME_MEDIA \
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s path= .*$/path ='$FLD_BIRDS_HOME_MEDIA \
   $SMB_CONF_TMP"
 fi
 if ! grep -A 100 "^\[bird_media\]" "$SMB_CONF_TMP" | awk '/^\[/{exit} /'"public"'/' | grep -q "public"; then
@@ -446,10 +436,10 @@ else
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i '/^\[bird_media\]/s directory mask = \
   .*$/directory mask  = 0700' $SMB_CONF_TMP"
 fi
-if ! grep -q '[bird_media]' $SMB_CONF_TMP; then
+if ! grep -q '[bird_media]' "$SMB_CONF_TMP"; then
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $SMB_CONF_TMP << EOF
 [bird_media]
-   path=$FLD_BIRDSHOME_MEDIA
+   path=$FLD_BIRDS_HOME_MEDIA
    public = yes
    writable = yes
    comment = video share
@@ -464,37 +454,37 @@ echo "configuration $SMB_CONF updated"
 install_steps+=1
 }
 create_startup_service() {
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDSHOME_SERV"
-  if [ $? -eq 0 ]; then
-      echo "File $FLD_BIRDSHOME_SERV created"
+  result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo touch  $FLD_BIRDS_HOME_SERV")
+  if [ "$result" -eq 0 ]; then
+      echo "File $FLD_BIRDS_HOME_SERV created"
   fi
-  if [ -f $FLD_BIRDSHOME_SERV ]; then
-      echo "Konfigurationsdatei $FLD_BIRDSHOME_SERV angelegt!"
+  if [ -f "$FLD_BIRDS_HOME_SERV" ]; then
+      echo "Konfigurationsdatei $FLD_BIRDS_HOME_SERV angelegt!"
   fi
   install_steps+=1
-echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_SERV << EOF
+echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDS_HOME_SERV << EOF
 [Unit]
-Description=birdshome Service
+Description=birds_home Service
 After=network.target
 
 [Service]
 Type=simple
 User=$APP_USER
-WorkingDirectory=$FLD_BIRDSHOME_ROOT
+WorkingDirectory=$FLD_BIRDS_HOME_ROOT
 Restart=always
-ExecStart=sh $FLD_BIRDSHOME_ROOT/birds_dev.sh
+ExecStart=sh $FLD_BIRDS_HOME_ROOT/birds_dev.sh
 
 [Install]
 WantedBy=multi-user.target
 EOF"
-echo 'service birdshome created'
+echo 'service birds_home created'
 
-echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDSHOME_ROOT/birds_dev.sh << EOF
+echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo tee -a $FLD_BIRDS_HOME_ROOT/birds_dev.sh << EOF
 #source env/bin/activate
-/bin/bash -c  'source /home/$APP_USER/birdshome/bin/activate'; exec /bin/bash -i
+/bin/bash -c  'source /home/$APP_USER/birds_home/bin/activate'; exec /bin/bash -i
 gunicorn3 --bind 0.0.0.0:5000 --threads 5 -w 1 --timeout 120 app:app
 EOF"
-echo $INST_USER_PWD | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDSHOME_ROOT/birds_dev.sh"
+echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chmod +x $FLD_BIRDS_HOME_ROOT/birds_dev.sh"
 install_steps+=1
 }
 update_nginx(){
@@ -543,9 +533,9 @@ system_setup() {
 start_system() {
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl daemon-reload"
   install_steps+=1
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl enable birdshome.service"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl enable birds_home.service"
   install_steps+=1
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl start birdshome.service"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl start birds_home.service"
   install_steps+=1
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo systemctl restart smbd.service"
   install_steps+=1
@@ -555,44 +545,44 @@ start_system() {
 }
 cleanup() {
   if [ $RUN_CLEANUP ]; then
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birdshome2"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm -R -f /home/$INSTALL_USER/birds_home2"
     echo 'end'
   fi
   install_steps+=1
 }
 cleanup_old_installation(){
-  if [ -d "$FLD_BIRDSHOME_ROOT" ]; then
+  if [ -d "$FLD_BIRDS_HOME_ROOT" ]; then
     echo 'existing installation found'
-    echo "changed owner of folder '$FLD_BIRDSHOME_ROOT' to '$INSTALL_USER'"
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDSHOME_ROOT"
+    echo "changed owner of folder '$FLD_BIRDS_HOME_ROOT' to '$INSTALL_USER'"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $INSTALL_USER:$INSTALL_USER $FLD_BIRDS_HOME_ROOT"
 
-    for entry in $FLD_BIRDSHOME_ROOT'/*'; do
+    for entry in $FLD_BIRDS_HOME_ROOT'/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
         echo "delete $entry"
       fi
     done
-    for entry in $FLD_BIRDSHOME'/*'; do
+    for entry in $FLD_BIRDS_HOME'/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
-    for entry in $FLD_BIRDSHOME'/handler/*'; do
+    for entry in $FLD_BIRDS_HOME'/handler/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
-    for entry in $FLD_BIRDSHOME'/forms/*'; do
+    for entry in $FLD_BIRDS_HOME'/forms/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
-    for entry in $FLD_BIRDSHOME'/sensors/*'; do
+    for entry in $FLD_BIRDS_HOME'/sensors/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
       fi
     done
-    for entry in $FLD_BIRDSHOME'/templates/*'; do
+    for entry in $FLD_BIRDS_HOME'/templates/*'; do
       if [ -f "$entry" ]; then
         echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $entry"
       fi
@@ -601,10 +591,10 @@ cleanup_old_installation(){
 }
 setup_app_configuration() {
     echo 'start to configure application'
-    existing_config="$FLD_BIRDSHOME_ROOT"/birdshome.json
-    tmp_config="$FLD_BIRDSHOME_ROOT"/birdshome_tmp.json
-    new_config="$FLD_BIRDSHOME_ROOT"/birdshome_new.json
-    hostname=$(echo $HOSTNAME)
+    existing_config="$FLD_BIRDS_HOME_ROOT"/birds_home.json
+    tmp_config="$FLD_BIRDS_HOME_ROOT"/birds_home_tmp.json
+    new_config="$FLD_BIRDS_HOME_ROOT"/birds_home_new.json
+    hostname=$HOSTNAME
     echo "copy $existing_config to $new_config"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $existing_config $new_config"
     #echo "adapt .system.application_user to $APP_USER in $new_config"
@@ -628,29 +618,29 @@ application_setup() {
     copy_application
     setup_app_configuration
     create_startup_service
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDSHOME_ROOT"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDS_HOME_ROOT"
     install_steps+=1
 }
 setup_raspberry(){
   if $LEGACY_ENABLED; then
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?start_x=.*/start_x=1' /boot/config.txt"
-    if [ $? -eq 0 ]; then
+    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?start_x=.*/start_x=1' /boot/config.txt")
+    if [ "$result" -eq 0 ]; then
       echo 'failed to configure legacy camera'
       exit
     fi
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?gpu_mem=.*/gpu_mem=128' /boot/config.txt"
-    if [ $? -eq 0 ]; then
+    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?gpu_mem=.*/gpu_mem=128' /boot/config.txt")
+    if [ "$result" -eq 0 ]; then
       echo 'failed to configure legacy camera'
       exit
     fi
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sh -c 'echo \"overlay=vc4-fkms-v3d\" >> /boot/config.txt'"
-    if [ $? -eq 0 ]; then
+    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sh -c 'echo \"overlay=vc4-fkms-v3d\" >> /boot/config.txt'")
+    if [ "$result" -eq 0 ]; then
       echo 'failed to configure legacy camera'
       exit
     fi
     install_steps+=1
-  whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60
-	if [ $? -eq 0 ]; then
+  result=$(whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60)
+	if [ "$result" -eq 0 ]; then
 	  whiptail --title "Installation setup" --msgbox  "The server will be restarted and is ready to use" 10 60
 		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
 	else
@@ -670,16 +660,16 @@ setup_raspberry(){
 # 4. Information of packages to be installed
 # 5. python packages to be installed based on requirements.txt
 # 6. root folder to copy the files to
-# 7. adapt the birdshome.json
+# 7. adapt the birds_home.json
 # 8. create the samba folder and samba user for remote access
 ########################################################################################
 
 while true; do
 
-  whiptail --title "Installation Dialog" --yesno "The following dialog guides you through the installation of your birdhome.\
+  whiptail --title "Installation Dialog" --yesno "The following dialog guides you through the installation of your bird home.\
    The following steps will be performed: \n\n \
    1. provide the installation user used for running the installation\n (user with sudo privileges required) \n \
-   2. Installation of all packages needed to run birdshome\n \
+   2. Installation of all packages needed to run birds home\n \
    3. Setup of the application user to run the application\n \
    4. Setup of the python environment based on the requirement.txt in\n	a virtual environment \n \
    5. creation of the folder structure \n \
@@ -688,8 +678,8 @@ while true; do
     if [ $STATUS -eq 0 ]; then
       while true; do
         installation_dialog
-        validate_installation_dialog
       done
+        echo "Start Installation"
         setup_app_configuration
         cleanup_old_installation
         system_setup
@@ -700,14 +690,3 @@ while true; do
       exit
     fi
 done
-
-
-
-
-
-#ask for user and required passwords to run the installation und setup user
-installation_dialog
-# setup the system user application etc
-system_setup
-application_setup
-start_system

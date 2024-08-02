@@ -62,8 +62,8 @@ class Config:
     REPLAY_INTERVAL = 10
     REPLAY_DAYS = 7
     REPLAY_PREFIX_VID: str = socket.gethostname() + '_'
-    REPLAY_PATH: str = '/etc/birdshome/application/static/media/replay/'
-    REPLAY_SCREENSHOT_PATH: str = '//etc/birdshome/application/static/media/screenshots/'
+    REPLAY_PATH: str = '/etc/birds_home/application/static/media/replay/'
+    REPLAY_SCREENSHOT_PATH: str = '//etc/birds_home/application/static/media/screenshots/'
 
     """Picture configuration"""
     PICTURE_PREFIX: str = socket.gethostname() + '_'
@@ -78,7 +78,7 @@ class Config:
     """LandingPage Configuration"""
     NAME_BIRD = ''
     DATE_CHICK: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
-    DATE_EGG: datetime  = datetime.strptime('01.01.1900', '%d.%m.%Y')
+    DATE_EGG: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     FIRST_VISIT: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     DATE_LEAVE: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
 
@@ -88,7 +88,7 @@ class Config:
 
     """database configuration"""
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
-    SQLALCHEMY_DATABASE_URI: str = 'sqlite:////etc/birdshome/application/database/birdshome_base.db'
+    SQLALCHEMY_DATABASE_URI: str = 'sqlite:////etc/birds_home/application/database/birds_home_base.db'
     SQLALCHEMY_DATABASE_USER: str
     SQLALCHEMY_DATABASE_PASSW: str
 
@@ -109,7 +109,7 @@ class Config:
 
 class ProdConfig(Config):
     data: json
-    with open("birdshome.json", "r") as jsonfile:
+    with open("birds_home.json", "r") as jsonfile:
         data = json.load(jsonfile)  # Reading the file
         jsonfile.close()
 
@@ -177,7 +177,7 @@ class ProdConfig(Config):
     """LandingPage Configuration"""
     NAME_BIRD = ''
     DATE_CHICK: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
-    DATE_EGG: datetime  = datetime.strptime('01.01.1900', '%d.%m.%Y')
+    DATE_EGG: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     FIRST_VISIT: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     DATE_LEAVE: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
 
@@ -220,7 +220,7 @@ class ProdConfig(Config):
 
 class DevConfig(Config):
     data: json
-    with open("birdshome.json", "r") as jsonfile:
+    with open("birds_home.json", "r") as jsonfile:
         data = json.load(jsonfile)  # Reading the file
         jsonfile.close()
 
@@ -288,7 +288,7 @@ class DevConfig(Config):
     """LandingPage Configuration"""
     NAME_BIRD = ''
     DATE_CHICK: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
-    DATE_EGG: datetime  = datetime.strptime('01.01.1900', '%d.%m.%Y')
+    DATE_EGG: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     FIRST_VISIT: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
     DATE_LEAVE: datetime = datetime.strptime('01.01.1900', '%d.%m.%Y')
 
