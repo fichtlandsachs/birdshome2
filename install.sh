@@ -395,20 +395,40 @@ python_setup(){
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y python3-full python3-virtualenv python3-dev python3-pip \
   python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps "
   echo "Change User context to $APP_USER"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo -u "$APP_USER" -i << EOF
+# Erstellen und Aktivieren eines virtuellen Umfelds
+venv_dir='/home/$APP_USER/birdie_home/venv'
+
+# Überprüfen, ob das Verzeichnis bereits existiert
+if [ -d '\$venv_dir' ]; then
+    echo 'Das virtuelle Umfeld existiert bereits.'
+else
+    echo 'Erstelle das virtuelle Umfeld...'
+    python3 -m venv \$venv_dir
+    echo 'Virtuelles Umfeld erstellt in \$venv_dir'
+fi
+
+# Aktivieren des virtuellen Umfelds
+source \$venv_dir/bin/activate
+pip3 uninstall -y numpy
+pip install -r /etc/birds_home/requirements.txt
+echo 'Virtuelles Umfeld aktiviert. Sie befinden sich nun im virtuellen Umfeld.'
+EOF"
+
   install_steps+=1
   # switch to user context and create the virtual environment
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cd ~/"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo python3 -m venv /home/'$APP_USER'/birds_home"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R  '$APP_USER':'$APP_USER' /home/'$APP_USER'/"
-  sleep 5s
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "source /home/"$APP_USER"/birds_home/bin/activate"
+  #echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cd ~/"
+  #echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo python3 -m venv /home/'$APP_USER'/birds_home"
+  #echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R  '$APP_USER':'$APP_USER' /home/'$APP_USER'/"
+  #sleep 5s
+  #echo "$APP_USER_PWD" | su - "$APP_USER" -c "source /home/"$APP_USER"/birds_home/bin/activate"
   install_steps+=1
   # install required packages
-  #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
-  install_steps+=1
-  folder=$FLD_BIRDS_HOME_ROOT'/requirements.txt'
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 install -r $folder"
+  ##pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
+  #echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 uninstall -y numpy"
+  #install_steps+=1
+  #folder=$FLD_BIRDS_HOME_ROOT'/requirements.txt'
+  #echo "$APP_USER_PWD" | su - "$APP_USER" -c "pip3 install -r $folder"
   install_steps+=1
   sleep 10s
   echo "Leaving App User Context"
