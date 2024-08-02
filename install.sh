@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+
 INSTALL_USER='pi'
 INST_USER_PWD=''
 APP_USER=$(jq -r ".system.application_user" birds_home.json)
