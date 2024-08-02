@@ -70,15 +70,15 @@ else
 					INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
 					 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
 					  if [ $? -eq 0 ]; then
-						if [ -z "$INSTALL_USER" ]; then
-						  whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
-						else
-						  if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-							whiptail --title "Installation user" --msgbox "Users permissions not sufficient" 10 60
-						  else
-							break
-						  fi
-						fi
+              if [ -z "$INSTALL_USER" ]; then
+                whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
+              else
+                if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+                whiptail --title "Installation user" --msgbox "User is not in list of sudoer" 10 60
+                else
+                break
+                fi
+              fi
 					  fi
 				  done
 				# request the user password for installation reasons
