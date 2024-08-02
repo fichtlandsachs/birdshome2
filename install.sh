@@ -11,7 +11,7 @@ install_steps=0
 
 REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev"\
  "libgstreamer1.0-dev" "gstreamer1.0-plugins-base" "gstreamer1.0-plugins-good" "ffmpeg"\
-  "libilmbase-dev" "libopenexr-dev" "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev"\
+  "libopencv-dev" "libhdf5-dev" "libjasper-dev" "libatlas-base-dev"\
   "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev")
 
 FLD_BIRDS_HOME_ROOT=$(jq -r ".system.application_root_folder" birds_home.json)
