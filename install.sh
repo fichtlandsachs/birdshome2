@@ -299,6 +299,16 @@ prepare_system(){
    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo rm /etc/systemd/system/birds_home.service"
   fi
   install_steps+=1
+    echo "Set up minimum firewall ports"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 80"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw limit https"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw limit samba"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw reload"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
+  echo "Firewall setup and enabled"
 }
 create_folder_structure(){
   if [ ! -d "$FLD_BIRDS_HOME_ROOT" ]; then
@@ -561,19 +571,10 @@ install_steps+=1
 system_setup() {
   basic_setup
   user_setup
-  prepare_system
+  python_setup
   update_nginx
   samba_setup
-  echo "Set up minimum firewall ports"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 22/tcp"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 80"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 443/tcp"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw allow 8443/tcp"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw limit https"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw limit samba"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw reload"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo ufw --force enable"
-  echo "Firewall setup and enabled"
+  prepare_system
   install_steps+=1
 }
 start_system() {
