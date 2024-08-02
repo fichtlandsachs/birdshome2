@@ -398,7 +398,7 @@ python_setup(){
   install_steps+=1
   # switch to user context and create the virtual environment
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cd ~/"
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "python3 -m venv /home/"$APP_USER"/birds_home"
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo python3 -m venv /home/"$APP_USER"/birds_home"
   sleep 5s
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "source /home/"$APP_USER"/birds_home/bin/activate"
   install_steps+=1
