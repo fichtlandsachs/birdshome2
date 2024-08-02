@@ -1,16 +1,19 @@
 import datetime
-from time import sleep
+import ftplib
 import os
-
 import pathlib
-import shutil, ftplib
-from smb.SMBHandler import SMBConnection
-from flask import current_app
+import shutil
 import socket
+from time import sleep
+
+from flask import current_app
+from smb.SMBHandler import SMBConnection
+
 from application import constants
 
 app = current_app
 app_logger = app.logger
+
 
 class FileUploader:
     def __init__(self):
@@ -39,7 +42,7 @@ class FileUploader:
             self.ip_adress = socket.gethostbyname(self.server)
         except Exception as e:
             self.server_not_found = True
-            app_logger.debug(str(self.server)+' server not found')
+            app_logger.debug(str(self.server) + ' server not found')
 
     def uploadPhotos(self):
         photos = list()
@@ -84,7 +87,7 @@ class FileUploader:
                                    app.config[constants.REPLAY_FOLDER])
         replays.extend(list(sorted(pathlib.Path(replay_path).glob(pattern), key=os.path.getmtime,
                                    reverse=True)))
-        app_logger.debug(str(len(replays))+' replay files found in folder ' + replay_path)
+        app_logger.debug(str(len(replays)) + ' replay files found in folder ' + replay_path)
         for replay in replays:
             if self.smb_enabled:
                 self.upload_file_via_smb(replay, app.config[constants.REPLAY_FOLDER])
@@ -114,8 +117,8 @@ class FileUploader:
         self.check_Network()
         if not self.server_not_found:
             ftp_server = ftplib.FTP(host=app.config[constants.SERVER_UPLOAD],
-                              username=app.config[constants.SERVER_USER_UPLOAD],
-                              passwd=app.config[constants.SERVER_PASS_UPLOAD])
+                                    username=app.config[constants.SERVER_USER_UPLOAD],
+                                    passwd=app.config[constants.SERVER_PASS_UPLOAD])
             try:
                 folderStruct = app.config[constants.FOLDER_UPLOAD].split('\\')
                 for folder in folderStruct[1:]:

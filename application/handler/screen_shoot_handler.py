@@ -1,17 +1,17 @@
 import datetime
+import os
 import pathlib
 from time import sleep
 
+import cv2
+import flask
 import numpy as np
-import requests
-import os
-import cv2, flask
 from flask import current_app
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from application.models import appConfig
+
 import application.constants as constants
+from application.models import appConfig
 
 app = current_app
 
@@ -28,7 +28,8 @@ class ScreenShotHandler:
             self.intervall: int = self.app.config.get(constants.REPLAY_INTERVAL)
             self.lastrun = self.getConfigEntry(self.session, constants.REPLAY, constants.REPLAY_LAST_RUN_SCREEN)
             self.daysReplay: int = self.app.config.get(constants.REPLAY_DAYS)
-            self.lastRunReplay: datetime = self.getConfigEntry(self.session, constants.REPLAY, constants.REPLAY_LAST_STARTTIME)
+            self.lastRunReplay: datetime = self.getConfigEntry(self.session, constants.REPLAY,
+                                                               constants.REPLAY_LAST_STARTTIME)
             self.fourcc: cv2.CAP_PROP_FOURCC = self.app.config.get(constants.VID_FOURCC)
             self.app.logger.info('ScreenShotHandler: ScreenShotHandler initialized')
         except Exception as e:
@@ -111,17 +112,18 @@ class ScreenShotHandler:
         entry = session.query(appConfig).filter_by(config_area=app_area, config_key=config_key).first()
         session.close()
         if entry is None:
-            self.app.logger.debug('ScreenShotHandler: '+app_area + '' + config_key + '' + 'not found')
+            self.app.logger.debug('ScreenShotHandler: ' + app_area + '' + config_key + '' + 'not found')
             return False
         else:
-            self.app.logger.debug('ScreenShotHandler: '+app_area + '' + config_key + '' + 'found')
+            self.app.logger.debug('ScreenShotHandler: ' + app_area + '' + config_key + '' + 'found')
             return True
 
     def getConfigEntry(self, session, app_area, config_key):
         if self.checkConfigEntryExists(session, app_area, config_key):
             entry = session.query(appConfig).filter_by(config_area=app_area, config_key=config_key).first()
             session.close()
-            self.app.logger.debug('ScreenShotHandler: '+app_area + '' + config_key + '' + entry.config_value + '' + 'not found')
+            self.app.logger.debug(
+                'ScreenShotHandler: ' + app_area + '' + config_key + '' + entry.config_value + '' + 'not found')
             if entry is not None:
                 return entry.config_value
             else:
@@ -133,28 +135,31 @@ class ScreenShotHandler:
         if self.checkConfigEntryExists(session, app_area, config_key):
             entry = session.query(appConfig).filter_by(config_area=app_area, config_key=config_key).first()
             entry.config_value = config_value
-            self.app.logger.debug('ScreenShotHandler: '+app_area + '' + config_key + '' + config_value + '' + 'is set')
+            self.app.logger.debug(
+                'ScreenShotHandler: ' + app_area + '' + config_key + '' + config_value + '' + 'is set')
         else:
             configRecord = appConfig()
             configRecord.config_area = app_area
             configRecord.config_key = config_key
             configRecord.config_value = config_value
             session.add(configRecord)
-            self.app.logger.debug('ScreenShotHandler: '+app_area + '' + config_key + '' + config_value + '' + 'is added')
+            self.app.logger.debug(
+                'ScreenShotHandler: ' + app_area + '' + config_key + '' + config_value + '' + 'is added')
         session.commit()
         session.close()
 
     def start_Replay(self):
         while True:
             try:
-                self.app.logger.debug('ScreenShotHandler: '+__name__ + 'is started')
+                self.app.logger.debug('ScreenShotHandler: ' + __name__ + 'is started')
                 self.updateConfig()
                 if self.active == 1:
 
                     if self.lastRunReplay is None:
                         self.createUpdateConfigEntry(self.session, constants.REPLAY, constants.REPLAY_LAST_STARTTIME,
                                                      datetime.datetime.now().strftime(constants.DATETIME_FORMAT_DATE))
-                        self.lastRunReplay = self.app.config[constants.REPLAY_LAST_STARTTIME] = datetime.datetime.now().strftime(
+                        self.lastRunReplay = self.app.config[
+                            constants.REPLAY_LAST_STARTTIME] = datetime.datetime.now().strftime(
                             constants.DATETIME_FORMAT_DATE)
                     if self.lastrun is None:
                         self.createScreenShot()
@@ -181,14 +186,14 @@ class ScreenShotHandler:
                                                                 constants.DATETIME_FORMAT_DATE) + datetime.timedelta(
                         days=int(self.daysReplay))
                     if nextReplayDate < datetime.datetime.now():
-                        self.app.logger.debug('ScreenShotHandler: '+__name__ + 'Time is over create replay now')
+                        self.app.logger.debug('ScreenShotHandler: ' + __name__ + 'Time is over create replay now')
                         self.createReplay()
                         self.createUpdateConfigEntry(self.session, constants.REPLAY, constants.REPLAY_LAST_STARTTIME,
                                                      datetime.datetime.now().strftime(constants.DATETIME_FORMAT_DATE))
                     self.app.logger.debug(__name__ + 'is active. Waiting now')
                     sleep(self.intervall * 60)
                 else:
-                    self.app.logger.debug('ScreenShotHandler: '+__name__ + 'is not set to active. Waiting....')
+                    self.app.logger.debug('ScreenShotHandler: ' + __name__ + 'is not set to active. Waiting....')
                     sleep(self.intervall * 60)
             except Exception as e:
                 self.app.logger.error(e.args[0])

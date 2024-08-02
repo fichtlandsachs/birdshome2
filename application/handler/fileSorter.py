@@ -1,17 +1,15 @@
+import datetime
 import os
 import pathlib
 import shutil
 from time import sleep
-import datetime
+
 import cv2
 from flask import current_app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from application import constants
-from concurrent.futures.thread import ThreadPoolExecutor
-
-from application import create_app
 from application.models import appConfig
 
 app = current_app
@@ -34,7 +32,7 @@ class FileSorter:
         self.time_Run_analyser = self.getConfigEntry(self.session, constants.VID_ANALYSER,
                                                      constants.VID_ANALYSER_TIME_RUN)
         val = self.getConfigEntry(self.session, constants.VID_ANALYSER,
-                                                          constants.VID_ANALYSER_ENABLED)
+                                  constants.VID_ANALYSER_ENABLED)
         if val is not None and val == 'True':
             self.analyser_is_active = True
         else:
@@ -107,31 +105,33 @@ class FileSorter:
             os.makedirs(os.path.join(self.path_vid_files, 'detect', 'less_10000'))
         if not os.path.exists(os.path.join(self.path_vid_files, 'detect', 'above_10000')):
             os.makedirs(os.path.join(self.path_vid_files, 'detect', 'above_10000'))
-        #app.logger.debug('folder structure created/ validated')
+        # app.logger.debug('folder structure created/ validated')
 
     def getFiles(self):
-        ending = app.config[constants.VID_PREFIX]+'_*.avi'
+        ending = app.config[constants.VID_PREFIX] + '_*.avi'
 
-        vidList:list
+        vidList: list
 
         vidList.extend(list(sorted(pathlib.Path(self.path_vid_files).glob(ending), key=os.path.getmtime)))
-        app.logger.debug(str(len(vidList))+' files found')
+        app.logger.debug(str(len(vidList)) + ' files found')
         time_start_str = self.getConfigEntry(self.session, constants.VID_ANALYSER,
                                              constants.VID_ANALYSER_TIME_RUN)
         time_end_str = '04:00'
-        time_end_date = datetime.datetime.now()+datetime.timedelta(days=1)
+        time_end_date = datetime.datetime.now() + datetime.timedelta(days=1)
 
         if int(time_start_str[:2]) > int(time_end_str[:2]):
             start_time_t = datetime.datetime.strptime(
                 datetime.datetime.now().strftime('%Y-%m-%d') + 'T' + time_start_str + ':00', '%Y-%m-%dT%H:%M:%S')
-            time_end_t = datetime.datetime.strptime(time_end_date.strftime('%Y-%m-%d') + 'T' + time_end_str + ':00', '%Y-%m-%dT%H:%M:%S')
+            time_end_t = datetime.datetime.strptime(time_end_date.strftime('%Y-%m-%d') + 'T' + time_end_str + ':00',
+                                                    '%Y-%m-%dT%H:%M:%S')
         else:
             start_time_t = datetime.datetime.strptime(
                 time_end_date.strftime('%Y-%m-%d') + 'T' + time_start_str + ':00', '%Y-%m-%dT%H:%M:%S')
-            time_end_t = datetime.datetime.strptime(time_end_date.strftime('%Y-%m-%d') + 'T' + time_end_str + ':00', '%Y-%m-%dT%H:%M:%S')
+            time_end_t = datetime.datetime.strptime(time_end_date.strftime('%Y-%m-%d') + 'T' + time_end_str + ':00',
+                                                    '%Y-%m-%dT%H:%M:%S')
 
         now = datetime.datetime.now()
-        app.logger.debug('Time is set from: ' + time_start_str + ' : '+ time_end_str)
+        app.logger.debug('Time is set from: ' + time_start_str + ' : ' + time_end_str)
         if len(vidList) > 0:
             for vid in vidList:
                 if start_time_t < now < time_end_t:
@@ -188,7 +188,7 @@ class FileSorter:
 
             # Finding contour of moving object
             cnts, hierarchy = cv2.findContours(thresh_frame.copy(),
-                                                      cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                               cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             for contour in cnts:
                 if cv2.contourArea(contour) > 3000:

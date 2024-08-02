@@ -27,42 +27,41 @@ RUN_CLEANUP=false
 
 
 validate_installation_dialog(){
-    if [ -z "$INSTALL_USER" ]; then
-      whiptail --title "Installation Setup" --msgbox "Install user is missing!" 0 60
-	    START_INSTALL=false
-    fi
-    if [ -z "$INST_USER_PWD" ]; then
-      whiptail --title "Installation Setup" --msgbox "Install user password is missing!" 0 60
-	    START_INSTALL=false
-    fi
-    if [ -z "$APP_USER" ]; then
-      whiptail --title "Application Setup" --yesno  "Will use the $INSTALL_USER as application user as well!" 0 60
-      STATUS=$?
-      if [ $STATUS -eq 0 ]; then
+  if [ -z "$INSTALL_USER" ]; then
+    whiptail --title "Installation Setup" --msgbox "Install user is missing!" 0 60
+    START_INSTALL=false
+  fi
+  if [ -z "$INST_USER_PWD" ]; then
+    whiptail --title "Installation Setup" --msgbox "Install user password is missing!" 0 60
+    START_INSTALL=false
+  fi
+  if [ -z "$APP_USER" ]; then
+    if whiptail --title "Application Setup" --yesno  "Will use the $INSTALL_USER as application user as well!" 0 60; then
           APP_USER=$INSTALL_USER
           APP_USER_PWD=$INST_USER_PWD
-	  else
-		  START_INSTALL=false
-      fi
+    else
+      START_INSTALL=false
     fi
-    if [ -z "$APP_USER_PWD" ]; then
-      whiptail --title "Application Setup" --yesno  "App user password is missing" 0 60
-	    START_INSTALL=false
+  fi
+  if [ -z "$APP_USER_PWD" ]; then
+    whiptail --title "Application Setup" --yesno  "App user password is missing" 0 60
+    START_INSTALL=false
+  fi
+  if [ -z "$SMB_USER" ]; then
+    if whiptail --title "Samba Setup" --yesno  "Will use the $INSTALL_USER as samba user as well!" 0 60; then
+        SMB_USER=$INSTALL_USER
+        SMB_USER_PWD=$INST_USER_PWD
+    else
+      START_INSTALL=false
     fi
-    if [ -z "$SMB_USER" ]; then
-      whiptail --title "Samba Setup" --yesno  "Will use the $INSTALL_USER as samba user as well!" 0 60
-      STATUS=$?
-      if [ $STATUS -eq 0 ]; then
-          SMB_USER=$INSTALL_USER
-          SMB_USER_PWD=$INST_USER_PWD
-	  else
-		  START_INSTALL=false
-      fi
-    fi
-    if [ -z "$SMB_USER_PWD" ]; then
-      whiptail --title "Samba Setup" --msgbox "Samba user password is missing" 0 60
-	    START_INSTALL=false
-    fi
+  fi
+  if [ -z "$SMB_USER_PWD" ]; then
+    whiptail --title "Samba Setup" --msgbox "Samba user password is missing" 0 60
+    START_INSTALL=false
+  fi
+  if $START_INSTALL; then
+	  return 0
+  fi
 }
 installation_dialog(){
 CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
@@ -73,8 +72,7 @@ CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
               3>&1 1>&2 2>&3)
 STATUS=$?
 if [ $STATUS -eq 1 ]; then
-	result=$(whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60)
-	if [ "$result" -eq 0 ]; then
+	if whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60; then
 		exit
 	fi
 else
@@ -82,53 +80,52 @@ else
     "INST_SETUP")
 	    while true; do
       CHOICE_INST=$(whiptail --title "Install Setup" --menu "Choose options" 20 60 8 \
-                    "1" "enable legacy camera support" \
-                    "2" "Setup Installation user"\
+                    "1" "Setup Installation user"\
+					"2" "enable legacy camera support" \
                     "3" "Required applications"\
-					          "4" "Update system"\
+					"4" "Update system"\
                     "5" "Delete previous installation including data "\
                     "6" "<< Back"\
                     3>&1 1>&2 2>&3)
 				STATUS=$?
     if [ $STATUS -eq 1 ]; then
-      break
+      return 1
     fi
 		case "$CHOICE_INST" in
 			"1")
-				result=$(whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60)
-				if [ "$result" -eq 0 ]; then
+				# ask for user ID and validate if the user is in Group sudo
+				  while true; do
+					INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
+					 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
+				  if [ -z "$INSTALL_USER" ]; then
+					  whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
+				  else
+					if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
+					  whiptail --title "Installation user" --msgbox "User is not in list of sudoer" 10 60
+					else
+					  break
+					fi
+				  fi
+				  done
+				# request the user password for installation reasons
+				  while true; do
+					INST_USER_PWD=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60\
+					3>&1 1>&2 2>&3)
+					if [ -z "$INST_USER_PWD" ]; then
+					   whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
+					else
+					  break
+					fi
+				  done
+				;;
+			"2")
+				if whiptail --title "Installation setup" --yesno "Legacy camera will be enabled" 10 60; then
 				  LEGACY_ENABLED=true
 				else
 				  LEGACY_ENABLED=false
 				fi
 			  ;;
-			"2")
-				# ask for user ID and validate if the user is in Group sudo
-				  while true; do
-					INSTALL_USER=$(whiptail --title "Installation user" --inputbox "Installation User ID:"\
-					 10 60 "$INSTALL_USER" 3>&1 1>&2 2>&3)
-          if [ -z "$INSTALL_USER" ]; then
-            whiptail --title "Installation user" --msgbox "Please provide a valid user" 10 60
-          else
-            if ! getent group sudo | awk -F: '{print $4}' | grep -qw "$INSTALL_USER"; then
-            whiptail --title "Installation user" --msgbox "User is not in list of sudoer" 10 60
-            else
-            break
-            fi
-          fi
-				  done
-				# request the user password for installation reasons
-				  while true; do
-					INST_USER_PWD=$(whiptail --title "Installation user" --passwordbox "Installation password:" 10 60 	"$INST_USER_PWD"  \
-					3>&1 1>&2 2>&3)
-					if [ -z "$INST_USER_PWD" ]; then
-					   whiptail --title "Installation user" --msgbox "Please provide a password" 10 60
-					else
-					  INSTALL_USER=""
-					  break
-					fi
-				  done
-				;;
+
 			"3")
 				for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
 					CHECKLIST_ITEMS+=("$PACKAGE" "" "on")
@@ -137,25 +134,25 @@ else
 				while running the setup process. \n\n " 30 60 15 "${CHECKLIST_ITEMS[@]}" 3>&1 1>&2 2>&3
 			  ;;
 			"4")
-			  result=$(whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
-			   " 10 60)
-			  if [ "$result" -eq 0 ]; then
-				SYSTEM_UPDATE=true
+
+			  if whiptail --title "Installation setup" --yesno "The system will be updated to the latest version.\n \
+			   " 10 60; then
+				  SYSTEM_UPDATE=true
 			  else
-				SYSTEM_UPDATE=false
+				  SYSTEM_UPDATE=false
 			  fi
 			;;
 			"5")
-			  result=$(whiptail --title "Installation setup" --yesno "The prevoius installation of birds_home will be deleted.\n \
-			  All data are lost.\n " 10 60)
-			  if [ "$result" -eq 0 ]; then
-				RUN_CLEANUP=true
+
+			  if whiptail --title "Installation setup" --yesno "The previous installation of birds_home will be deleted.\n \
+			  All data are lost.\n " 10 60; then
+				  RUN_CLEANUP=true
 			  else
-				RUN_CLEANUP=false
+				  RUN_CLEANUP=false
 			  fi
 			;;
 			"6")
-				break
+				return
 			;;
 		esac
 		done
@@ -167,6 +164,7 @@ else
                         "2" "Setup root folder"\
                         "3" "<< Back"\
                         3>&1 1>&2 2>&3)
+        STATUS=$?
         if [ $STATUS -eq 1 ]; then
           break
         fi
@@ -229,11 +227,10 @@ else
 		  done
 		;;
 		"RUN")
-		  start_inst=$(whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60)
-        if [ "$start_inst" -eq 0 ]; then
-		      validate_installation_dialog
-          if [ $START_INSTALL ]; then
-            return
+		  if whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60; then
+		     validate_installation_dialog
+          if $START_INSTALL ; then
+            return 0
           fi
         fi
 		  ;;
@@ -244,8 +241,6 @@ else
 		esac
 fi
 }
-
-
 basic_setup(){
   #update the system to the latest patchset
   if $SYSTEM_UPDATE; then
@@ -253,6 +248,11 @@ basic_setup(){
     install_steps+=1
   fi
   # Install all required packages
+  command="sudo apt install -y "
+  for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
+		command+="$PACKAGE"+" "
+	done
+	echo command
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx sqlite3 build-essential \
   libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
   libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev   libatlas-base-dev portaudio19-dev  \
@@ -639,8 +639,8 @@ setup_raspberry(){
       exit
     fi
     install_steps+=1
-  result=$(whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60)
-	if [ "$result" -eq 0 ]; then
+  result=$()
+	if whiptail --title "Installation setup" --yesno "Do you want to restart?" 10 60; then
 	  whiptail --title "Installation setup" --msgbox  "The server will be restarted and is ready to use" 10 60
 		echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo reboot"
 	else
@@ -677,7 +677,10 @@ while true; do
   STATUS=$?
     if [ $STATUS -eq 0 ]; then
       while true; do
-        installation_dialog
+        result=$(installation_dialog)
+		if [ result -eq 0 ]; then
+			break
+		fi
       done
         echo "Start Installation"
         setup_app_configuration

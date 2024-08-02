@@ -159,7 +159,7 @@
                 <p>
 
                     {{ form.upload_enabled }}
-                    {{ form.upload_enabled.label}}
+                    {{ form.upload_enabled.label }}
                     {% if form.upload_enabled.errors %}
                         <ul class="errors">
                             {% for error in form.upload_enabled.errors %}
@@ -180,18 +180,18 @@
                     {% endif %}
                 </p>                <p>
 
-                    {{ form.delete_enabled }}
-                    {{ form.delete_enabled.label }}
-                    {% if form.delete_enabled.errors %}
-                        <ul class="errors">
-                            {% for error in form.delete_enabled.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
+                {{ form.delete_enabled }}
+                {{ form.delete_enabled.label }}
+                {% if form.delete_enabled.errors %}
+                    <ul class="errors">
+                        {% for error in form.delete_enabled.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 </p>
-                            <p>
-                    {{ form.user_upload.label}}{{ form.user_upload }}
+                <p>
+                    {{ form.user_upload.label }}{{ form.user_upload }}
                     {% if form.user_upload.errors %}
                         <ul class="errors">
                             {% for error in form.user_upload.errors %}
@@ -200,26 +200,26 @@
                         </ul>
                     {% endif %}
 
-                    {{ form.password_upload.label }}
-                    {{ form.password_upload }}
-                    {% if form.password_upload.errors %}
-                        <ul class="errors">
-                            {% for error in form.password_upload.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </p>
-                <p>
-                {{ form.num_retry_upload.label }}
-                {{ form.num_retry_upload }}
-                {% if form.num_retry_upload.errors %}
+                {{ form.password_upload.label }}
+                {{ form.password_upload }}
+                {% if form.password_upload.errors %}
                     <ul class="errors">
-                        {% for error in form.num_retry_upload.errors %}
+                        {% for error in form.password_upload.errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
+                </p>
+                <p>
+                    {{ form.num_retry_upload.label }}
+                    {{ form.num_retry_upload }}
+                    {% if form.num_retry_upload.errors %}
+                        <ul class="errors">
+                            {% for error in form.num_retry_upload.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </p><p>
                 {{ form.pause_retry_upload.label }}
                 {{ form.pause_retry_upload }}
@@ -265,26 +265,26 @@
             <fieldset class="form-field">
                 <legend>Videoanalyse</legend>
                 <p>
-                {{ form.vid_sorter_enabled }}
-                {{ form.vid_sorter_enabled.label }}
-                {% if form.vid_sorter_enabled.errors %}
-                    <ul class="errors">
-                        {% for error in form.time_vid_sorter.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                    {{ form.vid_sorter_enabled }}
+                    {{ form.vid_sorter_enabled.label }}
+                    {% if form.vid_sorter_enabled.errors %}
+                        <ul class="errors">
+                            {% for error in form.time_vid_sorter.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </p>
                 <p>
-                {{ form.time_vid_sorter.label }}
-                {{ form.time_vid_sorter }}
-                {% if form.time_vid_sorter.errors %}
-                    <ul class="errors">
-                        {% for error in form.time_vid_sorter.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                    {{ form.time_vid_sorter.label }}
+                    {{ form.time_vid_sorter }}
+                    {% if form.time_vid_sorter.errors %}
+                        <ul class="errors">
+                            {% for error in form.time_vid_sorter.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </p>
             </fieldset>
             </p>

@@ -1,9 +1,11 @@
 import logging
-from sqlalchemy.pool import NullPool
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from application.models import appConfig
+
 
 class DBHandler:
     def __init__(self, dbUrl):
@@ -22,7 +24,6 @@ class DBHandler:
         self.logger.removeHandler(self.file_handler)
         self.file_handler.close()
 
-
     def open(self):
         try:
             self.logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class DBHandler:
             formatter = logging.Formatter('%(asctime)s : %(levelname)s : %(name)s : %(message)s')
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
-            engine = create_engine(self.dbURL, poolclass=NullPool,connect_args={'check_same_thread': False})
+            engine = create_engine(self.dbURL, poolclass=NullPool, connect_args={'check_same_thread': False})
             engine.dispose()
             self.conn = engine.connect()
             self.conn.detach()
@@ -110,7 +111,7 @@ class DBHandler:
             self.logger.error('failed to update config entry ' + app_area + '' + config_key + '' + e.args[0])
             self.close()
 
-    def createUpdateConfigEntryBulk(self, values:list):
+    def createUpdateConfigEntryBulk(self, values: list):
         self.logger.info('Create Bulb Update for Config Entries')
         self.open()
         for value in values:
@@ -121,5 +122,3 @@ class DBHandler:
             self.session.merge(configRecord)
         self.session.commit()
         self.close()
-
-

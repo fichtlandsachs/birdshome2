@@ -1,9 +1,10 @@
-from sqlalchemy import String, Column, Integer, func
+from sqlalchemy import String, Column
 from sqlalchemy.ext.declarative import declarative_base
 
 from application import db
 
 Base = declarative_base()
+
 
 class appConfig(db.Model):
     __tablename__ = "config"

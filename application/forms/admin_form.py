@@ -31,7 +31,7 @@ class AdminForm(flask_wtf.FlaskForm):
     duration_vidVal = IntegerField(
         '', render_kw=style
     )
-    motion_handling_enabled = BooleanField(label='automatische Erkennung',default=True)
+    motion_handling_enabled = BooleanField(label='automatische Erkennung', default=True)
     vid_res_x = IntegerField(
         'Video X', render_kw=style
 
@@ -77,7 +77,8 @@ class AdminForm(flask_wtf.FlaskForm):
         'Datei nach Upload löschen'
     )
     radio_ftp = RadioField(
-        'Protokoll', choices=[('ftp_upload', 'FTP'), ('folder_upload', 'eingebundenes Verzeichnis'), ('remoteFolder_upload', 'Netzlaufwerk')]
+        'Protokoll', choices=[('ftp_upload', 'FTP'), ('folder_upload', 'eingebundenes Verzeichnis'),
+                              ('remoteFolder_upload', 'Netzlaufwerk')]
     )
     num_retry_upload = IntegerField(
         'Anzahl Versuche Upload'

@@ -1,5 +1,4 @@
 import socket
-import traceback
 
 import flask
 import pysftp
@@ -56,9 +55,9 @@ class Connection_handler:
         if self.app.config.get(constants.SERVER_SMB_ENABLED) and self.connection.onAuthOK():
             file_obj = open(file_path, 'rb')
             self.connection.storeFile(service_name=self.app.config.get(constants.SERVER_FOLDER_UPLOAD),
-                                path=file_path,
-                                 file_obj=file_obj)
+                                      path=file_path,
+                                      file_obj=file_obj)
 
     def disconnect(self):
         self.connection.close()
-        self.app.logger.info(f'Disconnected from server{ self.app.config.get(constants.SERVER_NAME) }')
+        self.app.logger.info(f'Disconnected from server{self.app.config.get(constants.SERVER_NAME)}')

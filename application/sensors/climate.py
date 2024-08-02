@@ -60,7 +60,7 @@ def _getClimate():
 
 
 if __name__ == '__main__':
-    connection = db.connect('/etc/birdshome/birdshome_base.db')
+    connection = db.connect('/etc/birds_home/birds_home_base.db')
     cursor = connection.cursor()
     # temp, hum, pres = _getClimate()
     currTime = dt.datetime.now().isoformat()

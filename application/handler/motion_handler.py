@@ -15,6 +15,7 @@ with app.app_context():
     from application.handler.video_handler import VideoRecorder
     import application as appCfg
 
+
 class Motion_Handler:
 
     def __init__(self, vc):
@@ -86,7 +87,7 @@ class Motion_Handler:
 
                     # Finding contour of moving object
                     cnts, _ = cv2.findContours(thresh_frame.copy(),
-                                                  cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                               cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     for contour in cnts:
                         if cv2.contourArea(contour) < sensitivity:
                             continue

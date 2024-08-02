@@ -1,7 +1,6 @@
 import os
 import subprocess
 import threading
-from time import sleep
 
 
 class AudioVideoMerge:
@@ -29,5 +28,6 @@ class AudioVideoMerge:
                 os.remove(self.audioFile)
             except FileNotFoundError:
                 self.app.logger.info('Viedeo Audio Merger: can not delete' + self.audioFile)
+
     def stop(self):
         pass
