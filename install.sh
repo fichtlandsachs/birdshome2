@@ -393,7 +393,7 @@ copy_application(){
 }
 python_setup(){
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y python3-virtualenv python3-dev python3-pip \
-  python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps python-all-dev"
+  python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps"
   echo "Change User context to $APP_USER"
   install_steps+=1
   # switch to user context and create the virtual environment
