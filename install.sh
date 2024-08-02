@@ -207,9 +207,43 @@ else
 		esac
 fi
 }
-if [ -z $INSTALL_USER ]; then
-  exit
-fi
+validate_installation_dialog(){
+    if [ -z "$INSTALL_USER" ]; then
+      whiptail --title "Installation Setup" -msgbox "Install user is missing!" \
+      0 60 3>&1 1>&2 2>&3
+    fi
+    if [ -z "$INST_USER_PWD" ]; then
+      whiptail --title "Installation Setup" -msgbox "Install user password is missing!" \
+      0 60 3>&1 1>&2 2>&3
+    fi
+    if [ -z "$APP_USER" ]; then
+      whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" \
+      0 60 3>&1 1>&2 2>&3
+      STATUS=$?
+      if [ $STATUS -eq 0 ]; then
+          APP_USER=$INSTALL_USER
+          APP_USER_PWD=$INST_USER_PWD
+      fi
+    fi
+    if [ -z "$APP_USER_PWD" ]; then
+      whiptail --title "Application Setup" -msgbox "App user password is missing" \
+      0 60 3>&1 1>&2 2>&3
+    fi
+    if [ -z "$SMB_USER" ]; then
+      whiptail --title "Samba Setup" -msgbox "Will use the $INSTALL_USER as samba user as well!" \
+      0 60 3>&1 1>&2 2>&3
+      STATUS=$?
+      if [ $STATUS -eq 0 ]; then
+          SMB_USER=$INSTALL_USER
+          SMB_USER_PWD=$INST_USER_PWD
+      fi
+    fi
+    if [ -z "$SMB_USER_PWD" ]; then
+      whiptail --title "Samba Setup" -msgbox "Samba user password is missing" \
+      0 60 3>&1 1>&2 2>&3
+    fi
+}
+
 if [ -z "$APP_USER" ]; then
   whiptail --title "Application Setup" -msgbox "Will use the $INSTALL_USER as application user as well!" \
   0 60 3>&1 1>&2 2>&3
@@ -654,14 +688,14 @@ while true; do
     if [ $STATUS -eq 0 ]; then
       while true; do
         installation_dialog
+        validate_installation_dialog
+      done
         setup_app_configuration
         cleanup_old_installation
         system_setup
         setup_raspberry
         cleanup
         echo $install_steps
-
-      done
     else
       exit
     fi
