@@ -6,7 +6,7 @@ APP_USER_PWD=''
 SMB_USER=$(jq -r ".system.samba_user" birds_home.json)
 SMB_USER_PWD=''
 LEGACY_ENABLED=true
-START_INSTALL=true
+START_INSTALL=false
 install_steps=0
 
 REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libssl-dev" "libffi-dev"\
@@ -30,15 +30,20 @@ validate_installation_dialog(){
   if [ -z "$INSTALL_USER" ]; then
     whiptail --title "Installation Setup" --msgbox "Install user is missing!" 0 60
     START_INSTALL=false
+  else
+	START_INSTALL=true
   fi
   if [ -z "$INST_USER_PWD" ]; then
     whiptail --title "Installation Setup" --msgbox "Install user password is missing!" 0 60
     START_INSTALL=false
+  else
+	START_INSTALL=true
   fi
   if [ -z "$APP_USER" ]; then
     if whiptail --title "Application Setup" --yesno  "Will use the $INSTALL_USER as application user as well!" 0 60; then
           APP_USER=$INSTALL_USER
           APP_USER_PWD=$INST_USER_PWD
+		  START_INSTALL=true
     else
       START_INSTALL=false
     fi
@@ -46,11 +51,14 @@ validate_installation_dialog(){
   if [ -z "$APP_USER_PWD" ]; then
     whiptail --title "Application Setup" --yesno  "App user password is missing" 0 60
     START_INSTALL=false
+  else
+	START_INSTALL=true
   fi
   if [ -z "$SMB_USER" ]; then
     if whiptail --title "Samba Setup" --yesno  "Will use the $INSTALL_USER as samba user as well!" 0 60; then
         SMB_USER=$INSTALL_USER
         SMB_USER_PWD=$INST_USER_PWD
+		START_INSTALL=true
     else
       START_INSTALL=false
     fi
@@ -58,10 +66,10 @@ validate_installation_dialog(){
   if [ -z "$SMB_USER_PWD" ]; then
     whiptail --title "Samba Setup" --msgbox "Samba user password is missing" 0 60
     START_INSTALL=false
+  else
+	START_INSTALL=true
   fi
-  if $START_INSTALL; then
-	  return 0
-  fi
+
 }
 installation_dialog(){
 	CHOICE=$(whiptail --title "Install Setup" --menu "Choose options" 10 60 4  \
@@ -72,10 +80,11 @@ installation_dialog(){
 				  3>&1 1>&2 2>&3)
 	STATUS=$?
 	if [ $STATUS -eq 1 ]; then
-		if whiptail --title "Installation setup" --yesno "Do you want to exit the installation process?" 10 60; then
-			exit
-		fi
+		return 6
+	elif [ $STATUS -eq 0 ] && [ -z "$CHOICE" ]; then
+		return 6
 	else
+
     case "$CHOICE" in
     "INST_SETUP")
 		while true; do
@@ -87,8 +96,10 @@ installation_dialog(){
 			  "5" "Delete previous installation including data "\
 			  "6" "<< Back"\
 			  3>&1 1>&2 2>&3)
-					STATUS=$?
-			if [ $STATUS -eq 1 ]; then
+			STATUS=$?
+			if [ $STATUS -eq "1" ]; then
+			  return 1
+			elif [ "$CHOICE_INST" -eq "6" ]; then
 			  return 1
 			fi
 			case "$CHOICE_INST" in
@@ -146,7 +157,7 @@ installation_dialog(){
 					fi
 					;;
 				"6")
-					return
+
 					;;
 			esac
 		done
@@ -193,7 +204,7 @@ installation_dialog(){
             fi
             ;;
           3)
-          return
+			return
 			;;
           esac
 
@@ -224,7 +235,7 @@ installation_dialog(){
 		if whiptail --title "Installation setup" --yesno "Do you want to start the installation?" 10 60; then
 		validate_installation_dialog
 		  if $START_INSTALL ; then
-			return 0
+			return
 		  fi
 		fi
 	  ;;
@@ -242,15 +253,14 @@ basic_setup(){
     install_steps+=1
   fi
   # Install all required packages
-  command="sudo apt install -y "
-  for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
-		command+="$PACKAGE" " "
+	command="sudo apt install -y "
+
+	for PACK in "${REQUIRED_PACKAGES[@]}"; do
+			command+="$PACK "
 	done
-	echo command
-  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y samba gunicorn nginx sqlite3 build-essential \
-  libssl-dev libffi-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good ffmpeg libilmbase-dev \
-  libopenexr-dev libopencv-dev libhdf5-dev libjasper-dev   libatlas-base-dev portaudio19-dev  \
-  software-properties-common ufw  libopenblas-dev jq"
+	command="${command% }"
+
+  echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
   install_steps+=1
 }
 user_setup(){
@@ -305,7 +315,7 @@ copy_application(){
   source_folder="/home/$INSTALL_USER/birdshome2"
   file_arr=("$source_folder"'/*')
 
-  for entry in ${file_arr[@]}; do
+  for entry in "${file_arr[@]}"; do
     copy_folder="$entry"
     file=$(basename "$entry")
     target_folder="$FLD_BIRDS_HOME_ROOT/$file"
@@ -617,17 +627,17 @@ application_setup() {
 }
 setup_raspberry(){
   if $LEGACY_ENABLED; then
-    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?start_x=.*/start_x=1' /boot/config.txt")
+    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo raspi-config nonint do_camera 1")
     if [ "$result" -eq 0 ]; then
       echo 'failed to configure legacy camera'
       exit
     fi
-    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sed -i 's/^#\?gpu_mem=.*/gpu_mem=128' /boot/config.txt")
-    if [ "$result" -eq 0 ]; then
-      echo 'failed to configure legacy camera'
-      exit
-    fi
-    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo sh -c 'echo \"overlay=vc4-fkms-v3d\" >> /boot/config.txt'")
+	if ! grep -q "start_x=1" /boot/config.txt; then
+		result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo 'start_x=1' | sudo tee -a /boot/config.txt")
+	fi
+	if ! grep -q "gpu_mem=.*" /boot/config.txt; then
+		result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "echo 'gpu_mem=128' | sudo tee -a /boot/config.txt")
+	fi
     if [ "$result" -eq 0 ]; then
       echo 'failed to configure legacy camera'
       exit
@@ -660,19 +670,18 @@ setup_raspberry(){
 
 while true; do
 
-  whiptail --title "Installation Dialog" --yesno "The following dialog guides you through the installation of your bird home.\
+    if   whiptail --title "Installation Dialog" --yesno "The following dialog guides you through the installation of your bird home. \
    The following steps will be performed: \n\n \
    1. provide the installation user used for running the installation\n (user with sudo privileges required) \n \
    2. Installation of all packages needed to run birds home\n \
    3. Setup of the application user to run the application\n \
    4. Setup of the python environment based on the requirement.txt in\n	a virtual environment \n \
    5. creation of the folder structure \n \
-   6. creation of the samba folder for file access including a samba user " 20 78
-  STATUS=$?
-    if [ $STATUS -eq 0 ]; then
+   6. creation of the samba folder for file access including a samba user " 20 78; then
       while true; do
-        result=$(installation_dialog)
-		if [ "$result" -eq 0 ]; then
+        installation_dialog
+		echo "$START_INSTALL"
+		if $START_INSTALL; then
 			break
 		fi
       done
@@ -682,7 +691,7 @@ while true; do
         system_setup
         setup_raspberry
         cleanup
-        echo $install_steps
+        echo "$install_steps"
     else
       exit
     fi
