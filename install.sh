@@ -602,21 +602,24 @@ setup_app_configuration() {
     tmp_config="$FLD_BIRDS_HOME_ROOT"/birds_home_tmp.json
     new_config="$FLD_BIRDS_HOME_ROOT"/birds_home_new.json
     hostname=$HOSTNAME
-    echo "copy $existing_config to $new_config"
-    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $existing_config $new_config"
-    #echo "adapt .system.application_user to $APP_USER in $new_config"
-    command="jq '.system.application_user = \"$APP_USER\"' $new_config > $tmp_config && mv $tmp_config $new_config"
-    #echo $command
+
+    result=$(echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "cp $existing_config $new_config")
+
+    command="jq '.system.application_user = \"$APP_USER\"' $new_config > $tmp_config && cp $tmp_config $new_config"
+
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
-    #echo "adapt .system.secret_key to $SECRET_KEY in $new_config"
-    command="jq '.system.secret_key = \"$SECRET_KEY\"' $new_config > $tmp_config && mv $tmp_config $new_config"
-    #echo $command
+
+    command="jq '.system.secret_key = \"$SECRET_KEY\"' $new_config > $tmp_config && cp $tmp_config $new_config"
+
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
-    #echo "adapt .video.video_prefix to $hostname in $new_config"
-    command="jq '.video.video_prefix = \"$hostname'_'\"' $new_config > $tmp_config && mv $tmp_config $new_config"
-    #echo $command
+
+    command="jq '.video.video_prefix = \"$hostname'_'\"' $new_config > $tmp_config && cp $tmp_config $new_config"
+
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "$command"
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mv $new_config $existing_config"
+
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "rm $new_config"
+    echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "mv $tmp_config"
     echo "/napp configuration adapted"
 }
 application_setup() {
@@ -679,9 +682,8 @@ while true; do
 		fi
       done
         echo "Start Installation"
-        setup_app_configuration
-        cleanup_old_installation
         system_setup
+        application_setup
         setup_raspberry
         cleanup
         echo "$install_steps"
