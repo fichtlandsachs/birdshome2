@@ -395,7 +395,7 @@ python_setup(){
   echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo apt install -y python3-full python3-virtualenv python3-dev python3-pip \
   python3-setuptools python3-venv python3-numpy python3-opencv python3-picamera2 libcamera-apps "
   echo "Change User context to $APP_USER"
-  venv_dir="/home/"$APP_USER"/birdie_home/"
+  venv_dir="/home/"$APP_USER"/birds_home/"
   command="sudo -u '$APP_USER' -i << EOF
 
   # Überprüfen, ob das Verzeichnis bereits existiert
