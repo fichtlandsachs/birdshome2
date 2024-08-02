@@ -17,8 +17,8 @@ REQUIRED_PACKAGES=("samba" "gunicorn" "nginx" "sqlite3" "build-essential" "libss
   "portaudio19-dev" "software-properties-common" "ufw"  "libopenblas-dev")
 
 FLD_BIRDS_HOME_ROOT=$(jq -r ".system.application_root_folder" birds_home.json)
-FLD_BIRDS_HOME=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_folder" birds_home.json)
-FLD_BIRDS_HOME_MEDIA=$FLD_BIRDS_HOME_ROOT+$(jq -r ".system.application_media_folder" birds_home.json)
+FLD_BIRDS_HOME=$FLD_BIRDS_HOME_ROOT $(jq -r ".system.application_folder" birds_home.json)
+FLD_BIRDS_HOME_MEDIA=$FLD_BIRDS_HOME_ROOT $(jq -r ".system.application_media_folder" birds_home.json)
 FLD_BIRDS_HOME_SERV=$(jq -r ".system.application_startup_service" birds_home.json)
 SMB_CONF=$(jq -r ".system.samba_config_file" birds_home.json)
 SMB_CONF_TMP=$SMB_CONF'.tmp'
