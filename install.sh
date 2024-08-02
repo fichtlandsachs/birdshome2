@@ -398,9 +398,9 @@ python_setup(){
   install_steps+=1
   # switch to user context and create the virtual environment
   echo "$APP_USER_PWD" | su - "$APP_USER" -c "cd ~/"
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "python3 -m venv ~/birds_home"
+  echo "$APP_USER_PWD" | su - "$APP_USER" -c "python3 -m venv /home/"$APP_USER"/birds_home"
   sleep 5s
-  echo "$APP_USER_PWD" | su - "$APP_USER" -c "source ~/birds_home/bin/activate"
+  echo "$APP_USER_PWD" | su - "$APP_USER" -c "source /home/"$APP_USER"/birds_home/bin/activate"
   install_steps+=1
   # install required packages
   #pip3 install flask werkzeug flask_RESTful flask-SQLAlchemy mpld3 pandas pyaudio
