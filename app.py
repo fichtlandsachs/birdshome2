@@ -1,11 +1,12 @@
 import datetime
-import imutils as imutils
+# import imutils as imutils
 import io
-import numpy as np
 import os
 import pathlib
 import sqlite3
 import threading
+
+import numpy as np
 
 from application.forms.admin_form import AdminForm
 from application.handler.database_hndl import DBHandler
@@ -158,7 +159,7 @@ def stream():
     return render_template('streaming.html')
 
 
-# Route zum aufnehmen eines Videos direkt über die Website
+# Route zum Aufnehmen eines Videos direkt über die Website
 @app.route('/capture')
 def capture():
     # Define the codec and create VideoWriter object
@@ -195,7 +196,8 @@ def gen():
         if read_return_code:
             # frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2GRAY)
             if app.config.get(constants.VID_ROTATE_ENABLED) == 'True':
-                frame = imutils.rotate(frame, 180)
+                # frame = imutils.rotate(frame, 180)
+                pass
             _draw_label(frame, datetime.datetime.now().strftime(constants.DATETIME_FORMAT), (20, 20))
 
             encode_return_code, image_buffer = cv2.imencode('.' + str(app.config.get(constants.PICTURE_ENDING)), frame)
@@ -206,7 +208,7 @@ def gen():
 
 def _draw_label(img, text, pos):
     # zeichnen des Labels in das Bild
-    # das Bild die Position und der einzufügende Text werden als Parameter übergeben
+    # die Position und der einzufügende Text werden als Parameter übergeben
     font_face = cv2.FONT_HERSHEY_SIMPLEX
     scale = .4
     color = (255, 255, 255)
