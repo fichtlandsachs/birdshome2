@@ -593,7 +593,6 @@ install_steps+=1
 system_setup() {
   basic_setup
   user_setup
-  python_setup
   update_nginx
   samba_setup
   prepare_system
@@ -658,6 +657,7 @@ application_setup() {
     create_folder_structure
     copy_application
     setup_app_configuration
+    python_setup
     create_startup_service
     echo "$INST_USER_PWD" | su - "$INSTALL_USER" -c "sudo chown -R $APP_USER:$APP_USER $FLD_BIRDS_HOME_ROOT"
     install_steps+=1
